@@ -517,7 +517,7 @@ Twitter/X (platform: "twitter"):
     const body = {
       model: this.state.model,
       messages,
-      max_tokens: 4000,
+      max_tokens: 6000,
     };
     // reasoner doesn't support temperature or response_format
     if (!isReasoner) {
@@ -546,7 +546,38 @@ Twitter/X (platform: "twitter"):
     const braceStart = jsonStr.indexOf('{');
     const braceEnd = jsonStr.lastIndexOf('}');
     if (braceStart !== -1 && braceEnd !== -1) jsonStr = jsonStr.slice(braceStart, braceEnd + 1);
-    return this.safeParseJSON(jsonStr);
+    
+    // Try normal parse first
+    try { return this.safeParseJSON(jsonStr); } catch(e) {}
+
+    // Handle truncated JSON — try to close it
+    let truncated = jsonStr.slice(braceStart);
+    // Remove last incomplete value/key
+    truncated = truncated.replace(/,\s*"[^"]*"?\s*:?\s*("([^"\\]|\\.)*"?|[\d.]*|null|true|false|\[([^\[\]]*)\]?)?\s*$/, '');
+    truncated = truncated.replace(/,\s*\{[^}]*$/, ''); // remove last incomplete object
+    truncated = truncated.replace(/,\s*"[^"]*$/, '');   // remove last incomplete string
+    // Count and close brackets
+    let opens = 0, closes = 0, openSq = 0, closeSq = 0;
+    let inStr = false, esc = false;
+    for (const ch of truncated) {
+      if (esc) { esc = false; continue; }
+      if (ch === '\\') { esc = true; continue; }
+      if (ch === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (ch === '{') opens++;
+      if (ch === '}') closes++;
+      if (ch === '[') openSq++;
+      if (ch === ']') closeSq++;
+    }
+    // Close any open strings
+    if (inStr) truncated += '"';
+    // Remove trailing commas
+    truncated = truncated.replace(/,\s*$/, '');
+    // Close brackets
+    for (let i = 0; i < openSq - closeSq; i++) truncated += ']';
+    for (let i = 0; i < opens - closes; i++) truncated += '}';
+    
+    return this.safeParseJSON(truncated);
   }
 
   applyStatsChange(changes) {
