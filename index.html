@@ -286,6 +286,66 @@ class Component extends DCLogic {
 
   feedRef = React.createRef();
 
+  // Persistence
+  SAVE_KEY = 'story_sim_save';
+
+  componentDidMount() {
+    this.loadSave();
+  }
+
+  saveToDisk() {
+    const s = this.state;
+    if (s.screen !== 'simulator' || !s.storyData) return;
+    const save = {
+      storyData: s.storyData,
+      allEvents: s.allEvents,
+      stats: s.stats,
+      conversationHistory: s.conversationHistory,
+      charName: s.charName,
+      charAge: s.charAge,
+      charPersonality: s.charPersonality,
+      charBackground: s.charBackground,
+      selectedMember: s.selectedMember,
+      selectedRelation: s.selectedRelation,
+      selectedRoute: s.selectedRoute,
+      savedAt: Date.now(),
+    };
+    try {
+      localStorage.setItem(this.SAVE_KEY, JSON.stringify(save));
+    } catch(e) {
+      console.warn('存檔失敗', e);
+    }
+  }
+
+  loadSave() {
+    try {
+      const raw = localStorage.getItem(this.SAVE_KEY);
+      if (!raw) return;
+      const save = JSON.parse(raw);
+      if (!save.storyData || !save.allEvents?.length) return;
+      this.setState({
+        screen: 'simulator',
+        storyData: save.storyData,
+        allEvents: save.allEvents,
+        stats: save.stats || this.state.stats,
+        conversationHistory: save.conversationHistory || [],
+        charName: save.charName || '',
+        charAge: save.charAge || '19',
+        charPersonality: save.charPersonality || '',
+        charBackground: save.charBackground || '',
+        selectedMember: save.selectedMember || 'renjun',
+        selectedRelation: save.selectedRelation || 'real_sister',
+        selectedRoute: save.selectedRoute || 'brother_love',
+      });
+    } catch(e) {
+      console.warn('讀檔失敗', e);
+    }
+  }
+
+  clearSave() {
+    localStorage.removeItem(this.SAVE_KEY);
+  }
+
   members = {
     renjun: { name: '黃仁俊', emoji: '🎨', type: '清醒藝術型', en: 'Renjun' },
     jeno: { name: '李帝努', emoji: '🐕', type: '穩定犬系型', en: 'Jeno' },
@@ -442,19 +502,40 @@ Twitter/X (platform: "twitter"):
     try { return JSON.parse(result); } catch(e3) {}
     result = result.replace(/,\s*([}\]])/g, '$1');
     try { return JSON.parse(result); } catch(e4) {
-      throw new Error(`JSON 解析失敗，請重試`);
+      // Last resort: try to fix unquoted keys more aggressively
+      let lastTry = result.replace(/([{,]\s*)([a-zA-Z_]\w*)\s*:/g, '$1"$2":');
+      lastTry = lastTry.replace(/:\s*'([^']*)'/g, ':"$1"');
+      try { return JSON.parse(lastTry); } catch(e5) {
+        throw new Error(`JSON 解析失敗。原始回傳前 300 字：\n${str.slice(0, 300)}`);
+      }
     }
   }
 
   async callDeepSeek(messages) {
+    const isReasoner = this.state.model === 'deepseek-reasoner';
+    const body = {
+      model: this.state.model,
+      messages,
+      max_tokens: 4000,
+    };
+    // reasoner doesn't support temperature or response_format
+    if (!isReasoner) {
+      body.temperature = this.props.temperature ?? 0.9;
+      body.response_format = { type: 'json_object' };
+    }
     const res = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.state.apiKey}` },
-      body: JSON.stringify({ model: this.state.model, messages, temperature: this.props.temperature ?? 0.9, max_tokens: 4000 }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) { const err = await res.text(); throw new Error(`API 錯誤 (${res.status}): ${err}`); }
     const data = await res.json();
-    return data.choices[0].message.content;
+    const choice = data.choices[0];
+    const content = choice.message.content || '';
+    if (!content.trim()) {
+      throw new Error('API 回傳空內容，可能是 token 不足或模型問題');
+    }
+    return content;
   }
 
   extractJSON(raw) {
@@ -505,7 +586,7 @@ Twitter/X (platform: "twitter"):
           { role: 'user', content: userMsg },
           { role: 'assistant', content: raw },
         ],
-      });
+      }, () => this.saveToDisk());
     } catch (e) {
       this.setState({ isLoading: false, showError: true, errorMsg: `生成失敗：${e.message}` });
     }
@@ -560,7 +641,7 @@ Twitter/X (platform: "twitter"):
         storyData: { ...this.state.storyData, title: newData.title || this.state.storyData?.title, choices: newData.choices || [] },
         allEvents,
         conversationHistory: [...messages, { role: 'assistant', content: raw }],
-      });
+      }, () => this.saveToDisk());
     } catch (e) {
       this.setState({ isLoading: false, showError: true, errorMsg: `推進失敗：${e.message}` });
     }
@@ -910,7 +991,7 @@ Twitter/X (platform: "twitter"):
       onUserInputChange: (e) => this.setState({ userInput: e.target.value }),
       onUserInputKeyDown: (e) => { if (e.key === 'Enter' && s.userInput.trim()) { this.continueStory(s.userInput); this.setState({ userInput: '' }); } },
       onContinueStory: () => { if (s.userInput.trim()) { this.continueStory(s.userInput); this.setState({ userInput: '' }); } else { this.continueStory(); } },
-      onReset: () => this.setState({ screen: 'setup', storyData: null, allEvents: [], conversationHistory: [], filterPlatform: 'all', stats: { love_sibling: 15, love_romance: 0, popularity: 5, mood: 80, secret_safety: 95, company_alert: 5, public_heat: 3 } }),
+      onReset: () => { this.clearSave(); this.setState({ screen: 'setup', storyData: null, allEvents: [], conversationHistory: [], filterPlatform: 'all', stats: { love_sibling: 15, love_romance: 0, popularity: 5, mood: 80, secret_safety: 95, company_alert: 5, public_heat: 3 } }); },
     };
   }
 }
