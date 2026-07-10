@@ -440,7 +440,7 @@ Twitter/X (platform: "twitter"):
     const res = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.state.apiKey}` },
-      body: JSON.stringify({ model: this.state.model, messages, temperature: this.props.temperature ?? 0.9, max_tokens: 8000 }),
+      body: JSON.stringify({ model: this.state.model, messages, temperature: this.props.temperature ?? 0.9, max_tokens: 4000 }),
     });
     if (!res.ok) { const err = await res.text(); throw new Error(`API 錯誤 (${res.status}): ${err}`); }
     const data = await res.json();
@@ -496,18 +496,46 @@ Twitter/X (platform: "twitter"):
           { role: 'assistant', content: raw },
         ],
       });
-      setTimeout(() => { if (this.feedRef.current) this.feedRef.current.scrollTop = this.feedRef.current.scrollHeight; }, 100);
     } catch (e) {
       this.setState({ isLoading: false, showError: true, errorMsg: `生成失敗：${e.message}` });
     }
   }
 
+  // Summarize old conversation to save tokens — keep only last 2 exchanges
+  trimConversation(history) {
+    // history[0] = system, then pairs of user/assistant
+    if (history.length <= 5) return history; // system + 2 pairs = 5 msgs, no need to trim
+    const system = history[0];
+    const pairs = history.slice(1);
+    // Keep last 4 messages (2 exchanges), summarize the rest into a compact recap
+    const oldPairs = pairs.slice(0, -4);
+    const recentPairs = pairs.slice(-4);
+    // Build a compact summary of old exchanges
+    let recap = '【前情摘要】以下是之前的劇情重點：\n';
+    for (let i = 0; i < oldPairs.length; i += 2) {
+      const userMsg = oldPairs[i]?.content || '';
+      const assistantMsg = oldPairs[i + 1]?.content || '';
+      // Extract title from assistant JSON if possible
+      try {
+        const parsed = this.extractJSON(assistantMsg);
+        if (parsed.title) recap += `- ${parsed.title}\n`;
+      } catch(e) {
+        recap += `- (劇情段落)\n`;
+      }
+    }
+    return [
+      system,
+      { role: 'user', content: recap },
+      { role: 'assistant', content: '好的，我了解前情摘要，會延續劇情。' },
+      ...recentPairs,
+    ];
+  }
+
   async continueStory(input) {
     this.setState({ isLoading: true, loadingText: 'AI 正在推進劇情...' });
-    // Update system prompt with current stats
     const updatedSystem = this.buildSystemPrompt();
     const prompt = input || '請繼續推進劇情，生成下一段 events。延續角色和故事線。';
-    const history = [...this.state.conversationHistory];
+    const history = this.trimConversation([...this.state.conversationHistory]);
     history[0] = { role: 'system', content: updatedSystem };
     const messages = [...history, { role: 'user', content: prompt }];
 
@@ -523,7 +551,6 @@ Twitter/X (platform: "twitter"):
         allEvents,
         conversationHistory: [...messages, { role: 'assistant', content: raw }],
       });
-      setTimeout(() => { if (this.feedRef.current) this.feedRef.current.scrollTop = this.feedRef.current.scrollHeight; }, 100);
     } catch (e) {
       this.setState({ isLoading: false, showError: true, errorMsg: `推進失敗：${e.message}` });
     }
