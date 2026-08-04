@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>套件生命週期總覽 — endoflife.date</title>
+<style>
+  :root { --bg: #f8f9fb; --card: #fff; --border: #e2e5ea; --text: #1e2330; --muted: #7a8293; --green-bg: #d6f5e3; --green: #0d6e3a; --green-bd: #6ee7b7; --yellow-bg: #fef3c7; --yellow: #8a5000; --yellow-bd: #fbbf24; --red-bg: #fee2e2; --red: #991b1b; --red-bd: #f87171; --blue: #2563eb; --blue-bg: #eff6ff; --mono: 'SF Mono','Cascadia Code','Consolas',monospace; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,'Segoe UI','Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
+  .sub{font-size:12px;color:var(--muted);margin-top:3px}
+  .sub a{color:var(--blue)}
+  .hint{margin:14px 0;padding:12px 16px;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;font-size:13px;color:#92400e;display:none}
+  .summary{display:flex;gap:10px;margin:20px 0 18px;flex-wrap:wrap}
+  .summary-card{flex:1 1 140px;padding:14px 18px;border-radius:10px}
+  .summary-card .num{font-size:26px;font-weight:700}
+  .summary-card .lbl{font-size:12px;opacity:.8}
+  .filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .filters button{padding:5px 14px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);font-weight:400;transition:all .15s}
+  .filters button.on{border-color:var(--blue);background:var(--blue-bg);color:var(--blue);font-weight:600}
+  .product{border:1px solid var(--border);border-radius:9px;background:var(--card);margin-bottom:7px;overflow:hidden}
+  .product-hd{display:flex;align-items:center;width:100%;padding:11px 16px;background:none;border:none;cursor:pointer;gap:10px;text-align:left;font-family:inherit;font-size:14px}
+  .product-hd:hover{background:#f3f5f8}
+  .icon{font-size:19px;flex-shrink:0}
+  .name{flex:1;font-weight:600;color:var(--text)}
+  .badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+  .badge{padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:600;white-space:nowrap}
+  .badge-g{background:var(--green-bg);color:var(--green)}
+  .badge-y{background:var(--yellow-bg);color:var(--yellow)}
+  .badge-r{background:var(--red-bg);color:var(--red)}
+  .badge-lts{background:#dbeafe;color:#1e40af}
+  .arrow{font-size:13px;color:var(--muted);transition:transform .2s}
+  .arrow.open{transform:rotate(180deg)}
+  .product-bd{border-top:1px solid #f0f1f4;padding:0 6px 10px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  thead th{padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;border-bottom:2px solid var(--border)}
+  tbody td{padding:6px 10px;border-bottom:1px solid #f3f4f6;white-space:nowrap}
+  tr.row-eol{background:#fef2f2}
+  tr.row-warn{background:#fffbeb}
+  .status{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600}
+  .status-active{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+  .status-warn{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-bd)}
+  .status-eol{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+  .status-unk{background:#f3f4f6;color:#9ca3af;border:1px solid #d1d5db}
+  .mono{font-family:var(--mono);font-size:11.5px}
+  .toggle-btn{margin:6px 0;padding:4px 12px;font-size:12px;color:var(--blue);background:none;border:1px solid #bfdbfe;border-radius:4px;cursor:pointer}
+  .link-row{padding:4px 10px;font-size:11px;color:var(--muted)}
+  .link-row a{color:var(--muted)}
+  .link-row code{font-size:10px;background:#f3f4f6;padding:1px 5px;border-radius:3px;font-family:var(--mono)}
+  .footer{margin-top:22px;padding:14px;background:#f3f5f7;border-radius:9px;border:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7}
+  .footer code{font-size:11px;background:var(--card);padding:2px 6px;border-radius:3px;border:1px solid var(--border);font-family:var(--mono)}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .progress{margin:16px 0;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text)}
+  .progress-bar{height:6px;background:#e5e7eb;border-radius:3px;margin-top:8px;overflow:hidden}
+  .progress-fill{height:100%;background:var(--blue);border-radius:3px;transition:width .3s}
+  @media(max-width:600px){.wrap{padding:16px 10px 40px}table{font-size:11.5px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📋 套件生命週期總覽</h1>
+  <p class="sub">資料來源：<a href="https://endoflife.date" target="_blank">endoflife.date</a> API · <span id="ts"></span></p>
+
+  <div class="hint" id="hint">
+    ⚠️ 無法連線到 endoflife.date API。請<strong>下載此 HTML 檔</strong>後，用瀏覽器（Chrome / Edge / Firefox）直接開啟，即可正常撈取資料。
+  </div>
+
+  <div class="progress" id="progress">
+    <span class="spin"></span> 正在從 endoflife.date 撈取資料… <span id="prog-text">0 / 11</span>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-card" style="background:var(--green-bg);color:var(--green)">
+      <div class="num" id="s-active">—</div><div class="lbl">支援中</div>
+    </div>
+    <div class="summary-card" style="background:var(--yellow-bg);color:var(--yellow)">
+      <div class="num" id="s-warn">—</div><div class="lbl">即將到期 (&lt;1年)</div>
+    </div>
+    <div class="summary-card" style="background:var(--red-bg);color:var(--red)">
+      <div class="num" id="s-eol">—</div><div class="lbl">已停止支援</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="on" data-f="all">全部</button>
+    <button data-f="warn">⚠️ 即將到期</button>
+    <button data-f="active">✅ 僅支援中</button>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="footer">
+    <strong>API 呼叫範例：</strong><br>
+    <code>curl https://endoflife.date/api/v1/products/nodejs/</code><br><br>
+    <strong>各套件 Slug 對照：</strong>
+    Java → <code>oracle-jdk</code>、Windows → <code>windows</code> / <code>windows-server</code>、Node.js → <code>nodejs</code>、PostgreSQL → <code>postgresql</code>、Angular → <code>angular</code>、SQL Server → <code>mssqlserver</code>、.NET → <code>dotnet</code> / <code>dotnetfx</code>、Tomcat → <code>tomcat</code>、Linux Kernel → <code>linux</code>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = [
+  { name: "Java (Oracle JDK)", slug: "oracle-jdk", icon: "☕" },
+  { name: "Windows", slug: "windows", icon: "🪟" },
+  { name: "Windows Server", slug: "windows-server", icon: "🖥️" },
+  { name: "Node.js", slug: "nodejs", icon: "🟢" },
+  { name: "PostgreSQL", slug: "postgresql", icon: "🐘" },
+  { name: "Angular", slug: "angular", icon: "🅰️" },
+  { name: "SQL Server", slug: "mssqlserver", icon: "🗄️" },
+  { name: ".NET", slug: "dotnet", icon: "🔷" },
+  { name: ".NET Framework", slug: "dotnetfx", icon: "🔶" },
+  { name: "Tomcat", slug: "tomcat", icon: "🐱" },
+  { name: "Linux Kernel", slug: "linux", icon: "🐧" },
+];
+
+const store = {};
+let currentFilter = "all", openSlug = null, doneCount = 0, failCount = 0;
+
+function statusOf(eol) {
+  if (typeof eol === "boolean") return eol ? "eol" : "active";
+  if (typeof eol === "string") {
+    const d = new Date(eol); if (isNaN(d)) return "unknown";
+    const now = new Date();
+    if (d < now) return "eol";
+    return ((d - now) / 864e5 < 365) ? "warn" : "active";
+  }
+  return "unknown";
+}
+function daysLeft(eol) {
+  if (typeof eol !== "string") return null;
+  const d = new Date(eol); return isNaN(d) ? null : Math.ceil((d - new Date()) / 864e5);
+}
+function fmt(v) { if (typeof v === "boolean") return v ? "Yes" : "No"; return (!v || v === "N/A") ? "—" : v; }
+function statusHTML(st, eol) {
+  const d = daysLeft(eol);
+  const m = { active:["status-active","支援中"], warn:["status-warn", d!=null?d+"天":"即將到期"], eol:["status-eol","EOL"], unknown:["status-unk","—"] };
+  const [cls,lbl] = m[st]||m.unknown;
+  return '<span class="status '+cls+'">'+lbl+'</span>';
+}
+function summaryOf(slug) {
+  const r = store[slug]; if (!r||!r.data) return {active:0,warn:0,eol:0};
+  let a=0,w=0,e=0;
+  r.data.forEach(c=>{const s=statusOf(c.eol);if(s==="active")a++;else if(s==="warn")w++;else if(s==="eol")e++;});
+  return {active:a,warn:w,eol:e};
+}
+
+function buildTable(p) {
+  const r = store[p.slug];
+  if (!r) return '<div style="padding:14px;color:var(--muted)">載入中…</div>';
+  if (r.loading) return '<div style="padding:14px;color:var(--muted)"><span class="spin"></span> 載入中…</div>';
+  if (r.error) return '<div style="padding:14px;color:#ef4444">❌ '+r.error+'</div>';
+  if (!r.data||r.data.length===0) return '<div style="padding:14px;color:var(--muted)">無資料</div>';
+  const show = r.showAll ? r.data : r.data.slice(0,8);
+  let h='<table><thead><tr>';
+  ["版本","發布日期","Active Support","EOL 日期","最新版本","狀態"].forEach(t=>h+='<th>'+t+'</th>');
+  h+='</tr></thead><tbody>';
+  show.forEach(c=>{
+    const cycle=c.cycle||c.releaseCycle||"?", lts=c.lts, st=statusOf(c.eol);
+    const rc=st==="eol"?" row-eol":st==="warn"?" row-warn":"";
+    h+='<tr class="'+rc+'">';
+    h+='<td style="font-weight:500">'+cycle+(lts?' <span class="badge badge-lts">LTS</span>':'')+'</td>';
+    h+='<td style="color:var(--muted)">'+fmt(c.releaseDate)+'</td>';
+    h+='<td style="color:var(--muted)">'+fmt(c.support||c.activeSupport)+'</td>';
+    const es=st==="warn"?"font-weight:600;color:var(--yellow)":st==="eol"?"color:var(--red)":"";
+    h+='<td style="'+es+'">'+fmt(c.eol)+'</td>';
+    h+='<td class="mono" style="color:var(--muted)">'+(c.latest||"—")+'</td>';
+    h+='<td>'+statusHTML(st,c.eol)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  if(r.data.length>8) h+='<button class="toggle-btn" onclick="toggleAll(\''+p.slug+'\')">'+(r.showAll?'收合':'顯示全部 ('+r.data.length+' 筆)')+'</button>';
+  h+='<div class="link-row">🔗 <a href="https://endoflife.date/'+p.slug+'" target="_blank">endoflife.date/'+p.slug+'</a> · API: <code>/api/v1/products/'+p.slug+'/</code></div>';
+  return h;
+}
+
+function render() {
+  let ta=0,tw=0,te=0;
+  PRODUCTS.forEach(p=>{const s=summaryOf(p.slug);ta+=s.active;tw+=s.warn;te+=s.eol;});
+  document.getElementById("s-active").textContent=ta;
+  document.getElementById("s-warn").textContent=tw;
+  document.getElementById("s-eol").textContent=te;
+  const filtered=PRODUCTS.filter(p=>{
+    if(currentFilter==="all")return true;
+    const s=summaryOf(p.slug);
+    if(currentFilter==="warn")return s.warn>0;
+    if(currentFilter==="active")return s.active>0;
+    return true;
+  });
+  let html="";
+  filtered.forEach(p=>{
+    const s=summaryOf(p.slug),r=store[p.slug],isOpen=openSlug===p.slug;
+    html+='<div class="product"><button class="product-hd" onclick="toggle(\''+p.slug+'\')">';
+    html+='<span class="icon">'+p.icon+'</span><span class="name">'+p.name+'</span><span class="badges">';
+    if(r&&r.loading){html+='<span class="spin"></span>';}
+    else if(r&&r.error){html+='<span class="badge badge-r">錯誤</span>';}
+    else{
+      if(s.active>0)html+='<span class="badge badge-g">'+s.active+' 支援中</span>';
+      if(s.warn>0)html+='<span class="badge badge-y">'+s.warn+' 即將到期</span>';
+      if(s.eol>0)html+='<span class="badge badge-r">'+s.eol+' EOL</span>';
+    }
+    html+='</span><span class="arrow'+(isOpen?' open':'')+'">▼</span></button>';
+    if(isOpen)html+='<div class="product-bd">'+buildTable(p)+'</div>';
+    html+='</div>';
+  });
+  document.getElementById("list").innerHTML=html;
+}
+
+function toggle(slug){openSlug=openSlug===slug?null:slug;render();}
+function toggleAll(slug){if(store[slug])store[slug].showAll=!store[slug].showAll;render();}
+
+document.querySelector(".filters").addEventListener("click",e=>{
+  if(e.target.tagName!=="BUTTON")return;
+  currentFilter=e.target.dataset.f;
+  document.querySelectorAll(".filters button").forEach(b=>b.classList.toggle("on",b.dataset.f===currentFilter));
+  render();
+});
+
+document.getElementById("ts").textContent=new Date().toLocaleString("zh-TW");
+
+function updateProgress(){
+  const pct=Math.round(doneCount/PRODUCTS.length*100);
+  document.getElementById("prog-text").textContent=doneCount+" / "+PRODUCTS.length;
+  document.getElementById("prog-fill").style.width=pct+"%";
+  if(doneCount>=PRODUCTS.length){
+    const el=document.getElementById("progress");
+    if(failCount===PRODUCTS.length){
+      el.innerHTML='❌ 全部撈取失敗。請<strong>下載此檔案</strong>後用瀏覽器開啟（不要在 Claude 預覽中開啟）。';
+      el.style.background="#fee2e2";el.style.color="#991b1b";el.style.border="1px solid #f87171";
+      document.getElementById("hint").style.display="block";
+    } else if(failCount>0){
+      el.innerHTML='✅ 完成（'+failCount+' 個套件撈取失敗）';
+      setTimeout(()=>el.style.display="none",3000);
+    } else {
+      el.innerHTML='✅ 全部撈取完成！';
+      setTimeout(()=>el.style.display="none",2000);
+    }
+  }
+}
+
+// Try v1 API first, fallback to legacy API
+async function fetchProduct(p) {
+  store[p.slug] = { loading: true, data: null, error: null, showAll: false };
+  render();
+
+  const urls = [
+    "https://endoflife.date/api/v1/products/" + p.slug + "/",
+    "https://endoflife.date/api/" + p.slug + ".json"
+  ];
+
+  for (const url of urls) {
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) continue;
+      const json = await resp.json();
+      const releases = json.releases || json;
+      if (Array.isArray(releases) && releases.length > 0) {
+        store[p.slug] = { loading: false, data: releases, error: null, showAll: false };
+        doneCount++; updateProgress(); render();
+        return;
+      }
+    } catch (e) { /* try next URL */ }
+  }
+
+  store[p.slug] = { loading: false, data: null, error: "無法連線 (請下載後用瀏覽器開啟)", showAll: false };
+  doneCount++; failCount++; updateProgress(); render();
+}
+
+PRODUCTS.forEach(p => fetchProduct(p));
+</script>
+</body>
+</html>
