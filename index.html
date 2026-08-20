@@ -398,8 +398,6 @@ function appendMessage(msg){
   wrap.dataset.idx=messages.length-1;
   var bubble;
   if(msg.role!=='user'){
-    var avatar=document.createElement('div');avatar.className='dm-avatar';avatar.textContent='DM';
-    wrap.appendChild(avatar);
     var cw=document.createElement('div');cw.className='dm-content';
     var lbl=document.createElement('span');lbl.className='role-lbl dm';lbl.textContent='DM';
     if(msg.isSummary)lbl.textContent+=' 📁';
@@ -416,11 +414,10 @@ function appendMessage(msg){
   area.appendChild(wrap);area.scrollTop=area.scrollHeight;
   return bubble;
 }
+
 function showLoading(){
   var area=$('chat-area');
   var wrap=document.createElement('div');wrap.className='bwrap dm';wrap.id='loading-bubble';
-  var avatar=document.createElement('div');avatar.className='dm-avatar';avatar.textContent='DM';
-  wrap.appendChild(avatar);
   var cw=document.createElement('div');cw.className='dm-content';
   var lbl=document.createElement('span');lbl.className='role-lbl dm';lbl.textContent='DM';
   var bubble=document.createElement('div');bubble.className='bubble dm';
@@ -537,6 +534,7 @@ async function generateForumPosts(){
 }
 
 function renderForumPosts(){
+  window.toggleReplies=function(id){var el=document.getElementById(id);if(!el)return;el.style.display=el.style.display==='none'?'block':'none';};
   var list=$('forum-list');
   if(!forumPosts.length){
     list.innerHTML='<div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有貼文，點上方按鈕根據劇情生成</div>';
@@ -562,7 +560,7 @@ function renderForumPosts(){
       '<div class="forum-body">'+esc(p.content||'')+'</div>'+
       '<div class="forum-stats">'+
         '<span>❤️ '+(p.likes||0)+'</span>'+
-        '<span style="cursor:pointer" onclick="var el=document.getElementById(\''+rid+'\');if(el.style.display===\'none\'){el.style.display=\'block\';this.dataset.open=\'1\'}else{el.style.display=\'none\';this.dataset.open=\'\'}">'+'💬 '+(p.comments||replies.length||0)+'</span>'+
+        '<span style="cursor:pointer" onclick="toggleReplies(\''+rid+'\')">'+'💬 '+(p.comments||replies.length||0)+'</span>'+
       '</div>'+
       (replies.length?'<div id="'+rid+'" style="display:none;margin-top:10px;padding-top:4px">'+repliesHtml+'</div>':'')+
     '</div>';
