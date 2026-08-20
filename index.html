@@ -479,7 +479,7 @@ async function autoGenerateSidePosts(apiKey){
     var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是 NCT DREAM 飯圈論壇貼文生成器。根據劇情摘要，以第三人稱旁觀粉絲視角生成 1-2 篇 Dcard/Twitter 風格論壇貼文。內容必須是其他粉絲發的（不是玩家本人），例如：成員最新動態、演唱會後記、飯拍分享、成員互動八卦、行程目擊、新歌討論等。暱稱用典型飯圈暱稱（如「嘟嘟的小太陽」「渽民腿毛研究員」「馬克李永遠的神」）。繁體中文。回覆純 JSON 陣列：[{"board":"看板","title":"標題","author":"暱稱","content":"內文50-120字","likes":數字,"comments":數字,"time":"幾小時前","replies":[{"author":"暱稱","text":"留言","likes":數字}]}]。replies 2-4 則。不要加其他文字。'},
+        {role:'system',content:'你是 NCT DREAM 飯圈論壇貼文生成器。生成 1-2 篇 Dcard/Twitter 風格論壇貼文。內容是其他粉絲發的日常飯圈內容，跟劇情無關也沒關係，只要跟 NCT DREAM 有關就好。例如：成員直播精華、飯拍分享、周邊開箱、演唱會後記、成員搞笑互動、行程目擊、新歌心得、投票呼籲、表情包分享、站姐更新等。暱稱用典型飯圈暱稱。繁體中文。回覆純 JSON 陣列：[{"board":"看板","title":"標題","author":"暱稱","content":"內文50-120字","likes":數字,"comments":數字,"time":"幾小時前","replies":[{"author":"暱稱","text":"留言","likes":數字}]}]。replies 2-4 則。不要加其他文字。'},
         {role:'user',content:'劇情：\n'+summary}
       ],temperature:0.85,max_tokens:1200})
     });
@@ -495,7 +495,7 @@ async function autoGenerateSidePosts(apiKey){
     var res2=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是 NCT DREAM 成員 IG 貼文生成器。根據劇情生成 1 則 NCT DREAM 成員（如 haechan_nct、na.jaemin0813、jenoyahhh 等）的 IG 貼文，用完整 HTML（含 inline style），模擬 IG 外觀（頭像圓、用戶名、漸層色塊圖片區 height:280px、愛心留言圖示、caption）。內容是成員自己發的日常/工作照/心情文，不是玩家發的。繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"HTML字串"}]。不要加其他文字。'},
+        {role:'system',content:'你是 NCT DREAM 成員 IG 貼文生成器。生成 1 則 NCT DREAM 成員（如 haechan_nct、na.jaemin0813、jenoyahhh、rennjun__、mark__lee、zhaboriya 等）的 IG 貼文。內容是成員自己發的日常動態，跟劇情無關也沒關係——練習室自拍、吃飯打卡、深夜感性文、成員合照、新髮色、旅行照等。用完整 HTML（含 inline style），模擬 IG 外觀（頭像圓、用戶名、漸層色塊圖片區 height:280px、愛心留言圖示、caption）。繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"HTML字串"}]。不要加其他文字。'},
         {role:'user',content:'劇情：\n'+summary}
       ],temperature:0.85,max_tokens:2000})
     });
@@ -519,7 +519,7 @@ async function generateForumPosts(){
     var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是 NCT DREAM 飯圈論壇貼文生成器。根據劇情摘要，以第三人稱旁觀粉絲視角生成 2-3 篇 Dcard/Twitter 風格論壇貼文。內容必須是其他粉絲發的（不是玩家本人），例如：成員最新動態、演唱會後記、飯拍分享、成員互動討論、行程目擊、新歌心得等。暱稱用典型飯圈暱稱。繁體中文。回覆純 JSON 陣列：[{"board":"看板名","title":"標題","author":"飯圈暱稱","content":"內文(50-150字)","likes":數字,"comments":數字,"time":"幾小時前","replies":[{"author":"暱稱","text":"留言內容","likes":數字}]}]。replies 必須有 2-5 則，風格像真實飯圈網友回覆（有認真分析的、有搞笑的、有吐槽的、有花癡的）。不要加任何其他文字。'},
+        {role:'system',content:'你是 NCT DREAM 飯圈論壇貼文生成器。生成 2-3 篇 Dcard/Twitter 風格論壇貼文。內容是其他粉絲發的日常飯圈內容，跟劇情無關也沒關係，只要跟 NCT DREAM 有關就好。例如：成員直播精華、飯拍分享、周邊開箱、演唱會後記、成員搞笑互動、行程目擊、新歌心得、投票呼籲、表情包分享、站姐更新、打歌舞台討論等。暱稱用典型飯圈暱稱。繁體中文。回覆純 JSON 陣列：[{"board":"看板名","title":"標題","author":"飯圈暱稱","content":"內文(50-150字)","likes":數字,"comments":數字,"time":"幾小時前","replies":[{"author":"暱稱","text":"留言內容","likes":數字}]}]。replies 必須有 2-5 則，風格像真實飯圈網友回覆（有認真分析的、有搞笑的、有吐槽的、有花癡的）。不要加任何其他文字。'},
         {role:'user',content:'劇情摘要：\n'+summary}
       ],temperature:0.8,max_tokens:2000})
     });
@@ -592,7 +592,7 @@ async function generateIGPosts(){
     var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是一個 Instagram 貼文生成器。根據提供的劇情，生成 2-3 則角色的 IG 貼文。每則貼文用完整 HTML 格式呈現（包含樣式），模擬真實 IG 貼文外觀（頭像、用戶名、圖片區域用色塊代替、愛心/留言圖示、caption）。用繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"完整HTML字串（含<style>和結構）"}]。不要加其他文字。HTML 中圖片區域用漂亮的漸層色塊代替，高度 300px。'},
+        {role:'system',content:'你是 NCT DREAM 成員 IG 貼文生成器。生成 2-3 則 NCT DREAM 成員（如 haechan_nct、na.jaemin0813、jenoyahhh、rennjun__、mark__lee、zhaboriya 等）的 IG 貼文。內容是成員自己發的日常動態，跟劇情無關也沒關係——練習室自拍、吃飯打卡、深夜感性文、成員合照、新髮色、旅行照、表情包等。每則貼文用完整 HTML 格式呈現（含 inline style），模擬真實 IG 貼文外觀（頭像圓、用戶名、圖片區域用漂亮漸層色塊代替 height:280px、愛心/留言圖示、caption）。繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"完整HTML字串"}]。不要加其他文字。'},
         {role:'user',content:'劇情摘要：\n'+summary}
       ],temperature:0.8,max_tokens:4000})
     });
