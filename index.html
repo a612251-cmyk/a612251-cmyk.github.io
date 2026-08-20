@@ -337,18 +337,22 @@ function parseMarkdown(text){
     if(/^[━─\-=_]{3,}$/.test(line.trim())){out.push('<hr>');i++;continue;}
     // 【插播】special card
     if(line.trim().startsWith('【插播')){
-      var iTitle=line.trim();
+      var iTitle=line.trim().replace(/^【/,'').replace(/】/,'').replace(/^插播[：:─—\s]*/,'插播：');
       var iLines=[];i++;
-      while(i<lines.length&&lines[i].trim()!==''&&!lines[i].trim().startsWith('【區塊')&&!lines[i].trim().startsWith('━')){
+      var emptyCount=0;
+      while(i<lines.length){
+        var cl=lines[i].trim();
+        if(cl.startsWith('【區塊')||cl.startsWith('━━')||cl.startsWith('| 選項')||cl.startsWith('③'))break;
+        if(cl===''){emptyCount++;if(emptyCount>2)break;i++;continue;}
+        emptyCount=0;
         iLines.push(lines[i]);i++;
       }
       var iBody=iLines.map(function(l){
-        // Split dialogue: Name：「text」 or Name：text
         var dl=l.match(/^(.+?)[：:](.+)$/);
-        if(dl){return'<div style="margin:6px 0"><span style="font-weight:700;color:#B878C8">'+esc(dl[1].trim())+'</span><span style="color:#8870A0;margin-left:2px">'+inlineFormat(dl[2].trim())+'</span></div>';}
-        return'<p style="margin:4px 0;color:#8870A0">'+inlineFormat(l)+'</p>';
+        if(dl){return'<div style="margin:8px 0;line-height:1.7"><span style="font-weight:700;color:#B878C8">'+esc(dl[1].trim())+'</span><span style="color:#8870A0;margin-left:4px">'+inlineFormat(dl[2].trim())+'</span></div>';}
+        return'<p style="margin:6px 0;color:#8870A0;line-height:1.7">'+inlineFormat(l)+'</p>';
       }).join('');
-      out.push('<div style="background:linear-gradient(135deg,#F8E8FF,#FFE8F4);border:1.5px solid #E8D0F0;border-radius:16px;padding:14px 16px;margin:14px 0;box-shadow:0 2px 10px rgba(200,160,220,.12)"><div style="font-size:13px;font-weight:700;color:#B070A0;margin-bottom:8px;display:flex;align-items:center;gap:6px">🎬 '+esc(iTitle.replace(/^【/,'').replace(/】$/,''))+'</div>'+iBody+'</div>');
+      out.push('<div style="background:linear-gradient(135deg,#F8E8FF,#FFE8F4);border:1.5px solid #E8D0F0;border-radius:16px;padding:14px 16px;margin:14px 0;box-shadow:0 2px 10px rgba(200,160,220,.12)"><div style="font-size:13px;font-weight:700;color:#B070A0;margin-bottom:10px;display:flex;align-items:center;gap:6px">🎬 '+esc(iTitle)+'</div>'+iBody+'</div>');
       continue;
     }
     var m;
@@ -412,7 +416,6 @@ function appendMessage(msg){
   area.appendChild(wrap);area.scrollTop=area.scrollHeight;
   return bubble;
 }
-
 function showLoading(){
   var area=$('chat-area');
   var wrap=document.createElement('div');wrap.className='bwrap dm';wrap.id='loading-bubble';
@@ -519,7 +522,7 @@ async function generateForumPosts(){
     var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是一個論壇貼文生成器。根據提供的劇情摘要，生成 2-3 篇相關的論壇貼文（如 Dcard/PTT 風格）。用繁體中文。回覆純 JSON 陣列格式：[{"board":"看板名","title":"標題","author":"匿名暱稱","content":"內文(50-150字)","likes":數字,"comments":數字,"time":"幾小時前"}]。不要加任何其他文字。'},
+        {role:'system',content:'你是一個論壇貼文生成器。根據提供的劇情摘要，生成 2-3 篇相關的論壇貼文（如 Dcard/PTT 風格）。用繁體中文。每篇貼文要包含 2-5 則留言。回覆純 JSON 陣列格式：[{"board":"看板名","title":"標題","author":"匿名暱稱","content":"內文(50-150字)","likes":數字,"comments":數字,"time":"幾小時前","replies":[{"author":"暱稱","text":"留言內容","likes":數字}]}]。replies 必須有 2-5 則，風格像真實網友回覆（有認真的、有搞笑的、有吐槽的）。不要加任何其他文字。'},
         {role:'user',content:'劇情摘要：\n'+summary}
       ],temperature:0.8,max_tokens:2000})
     });
@@ -539,7 +542,19 @@ function renderForumPosts(){
     list.innerHTML='<div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有貼文，點上方按鈕根據劇情生成</div>';
     return;
   }
-  list.innerHTML=forumPosts.map(function(p){
+  list.innerHTML=forumPosts.map(function(p,idx){
+    var replies=p.replies||[];
+    var repliesHtml=replies.map(function(r){
+      return'<div style="padding:8px 0;border-top:1px solid #F0E0F0;display:flex;gap:8px;align-items:flex-start">'+
+        '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#E8D0F8,#FFD8EC);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#B878C0">'+esc((r.author||'匿')[0])+'</div>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:11px;color:#C8A0C8;font-weight:600">'+esc(r.author||'匿名')+'</div>'+
+          '<div style="font-size:13px;color:#7860A0;margin-top:2px;line-height:1.5">'+esc(r.text||'')+'</div>'+
+          '<div style="font-size:11px;color:#D0B8D8;margin-top:3px">❤️ '+(r.likes||0)+'</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    var rid='forum-replies-'+idx;
     return'<div class="forum-card">'+
       '<div class="forum-board">'+esc(p.board||'閒聊')+'</div>'+
       '<div class="forum-title">'+esc(p.title)+'</div>'+
@@ -547,8 +562,9 @@ function renderForumPosts(){
       '<div class="forum-body">'+esc(p.content||'')+'</div>'+
       '<div class="forum-stats">'+
         '<span>❤️ '+(p.likes||0)+'</span>'+
-        '<span>💬 '+(p.comments||0)+'</span>'+
+        '<span style="cursor:pointer" onclick="var el=document.getElementById(\''+rid+'\');if(el.style.display===\'none\'){el.style.display=\'block\';this.dataset.open=\'1\'}else{el.style.display=\'none\';this.dataset.open=\'\'}">'+'💬 '+(p.comments||replies.length||0)+'</span>'+
       '</div>'+
+      (replies.length?'<div id="'+rid+'" style="display:none;margin-top:10px;padding-top:4px">'+repliesHtml+'</div>':'')+
     '</div>';
   }).join('');
 }
