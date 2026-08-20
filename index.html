@@ -26,7 +26,7 @@ a{color:#D48CB0}a:hover{color:#E8A8C8}
 .bwrap{display:flex;flex-direction:column;gap:3px}
 .bwrap.user{align-items:flex-end}
 .bwrap.dm{flex-direction:row;align-items:flex-start;gap:10px}
-.dm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#E0C8F8,#FFD0E8);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#9878C0;border:2px solid #F0D8F0;margin-top:20px}
+.dm-avatar{display:none}
 .dm-content{display:flex;flex-direction:column;gap:3px;min-width:0}
 .role-lbl{font-size:12px;color:#C8A8D8;padding:0 4px;font-weight:500}
 .role-lbl.user{color:#E888B0}
@@ -479,7 +479,7 @@ async function autoGenerateSidePosts(apiKey){
     var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是論壇貼文生成器。根據劇情摘要，生成 1-2 篇 Dcard 風格論壇貼文。繁體中文。回覆純 JSON 陣列：[{"board":"看板","title":"標題","author":"暱稱","content":"內文50-120字","likes":數字,"comments":數字,"time":"幾小時前"}]。不要加其他文字。'},
+        {role:'system',content:'你是 NCT DREAM 飯圈論壇貼文生成器。根據劇情摘要，以第三人稱旁觀粉絲視角生成 1-2 篇 Dcard/Twitter 風格論壇貼文。內容必須是其他粉絲發的（不是玩家本人），例如：成員最新動態、演唱會後記、飯拍分享、成員互動八卦、行程目擊、新歌討論等。暱稱用典型飯圈暱稱（如「嘟嘟的小太陽」「渽民腿毛研究員」「馬克李永遠的神」）。繁體中文。回覆純 JSON 陣列：[{"board":"看板","title":"標題","author":"暱稱","content":"內文50-120字","likes":數字,"comments":數字,"time":"幾小時前","replies":[{"author":"暱稱","text":"留言","likes":數字}]}]。replies 2-4 則。不要加其他文字。'},
         {role:'user',content:'劇情：\n'+summary}
       ],temperature:0.85,max_tokens:1200})
     });
@@ -495,7 +495,7 @@ async function autoGenerateSidePosts(apiKey){
     var res2=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是 IG 貼文生成器。根據劇情生成 1 則角色 IG 貼文，用完整 HTML（含 inline style），模擬 IG 外觀（頭像圓、用戶名、漸層色塊圖片區 height:280px、愛心留言圖示、caption）。繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"HTML字串"}]。不要加其他文字。'},
+        {role:'system',content:'你是 NCT DREAM 成員 IG 貼文生成器。根據劇情生成 1 則 NCT DREAM 成員（如 haechan_nct、na.jaemin0813、jenoyahhh 等）的 IG 貼文，用完整 HTML（含 inline style），模擬 IG 外觀（頭像圓、用戶名、漸層色塊圖片區 height:280px、愛心留言圖示、caption）。內容是成員自己發的日常/工作照/心情文，不是玩家發的。繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"HTML字串"}]。不要加其他文字。'},
         {role:'user',content:'劇情：\n'+summary}
       ],temperature:0.85,max_tokens:2000})
     });
@@ -519,7 +519,7 @@ async function generateForumPosts(){
     var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是一個論壇貼文生成器。根據提供的劇情摘要，生成 2-3 篇相關的論壇貼文（如 Dcard/PTT 風格）。用繁體中文。每篇貼文要包含 2-5 則留言。回覆純 JSON 陣列格式：[{"board":"看板名","title":"標題","author":"匿名暱稱","content":"內文(50-150字)","likes":數字,"comments":數字,"time":"幾小時前","replies":[{"author":"暱稱","text":"留言內容","likes":數字}]}]。replies 必須有 2-5 則，風格像真實網友回覆（有認真的、有搞笑的、有吐槽的）。不要加任何其他文字。'},
+        {role:'system',content:'你是 NCT DREAM 飯圈論壇貼文生成器。根據劇情摘要，以第三人稱旁觀粉絲視角生成 2-3 篇 Dcard/Twitter 風格論壇貼文。內容必須是其他粉絲發的（不是玩家本人），例如：成員最新動態、演唱會後記、飯拍分享、成員互動討論、行程目擊、新歌心得等。暱稱用典型飯圈暱稱。繁體中文。回覆純 JSON 陣列：[{"board":"看板名","title":"標題","author":"飯圈暱稱","content":"內文(50-150字)","likes":數字,"comments":數字,"time":"幾小時前","replies":[{"author":"暱稱","text":"留言內容","likes":數字}]}]。replies 必須有 2-5 則，風格像真實飯圈網友回覆（有認真分析的、有搞笑的、有吐槽的、有花癡的）。不要加任何其他文字。'},
         {role:'user',content:'劇情摘要：\n'+summary}
       ],temperature:0.8,max_tokens:2000})
     });
@@ -535,12 +535,19 @@ async function generateForumPosts(){
 
 function renderForumPosts(){
   window.toggleReplies=function(id){var el=document.getElementById(id);if(!el)return;el.style.display=el.style.display==='none'?'block':'none';};
+  window.forumPage=window.forumPage||0;
+  var perPage=3;
   var list=$('forum-list');
   if(!forumPosts.length){
     list.innerHTML='<div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有貼文，點上方按鈕根據劇情生成</div>';
     return;
   }
-  list.innerHTML=forumPosts.map(function(p,idx){
+  var totalPages=Math.ceil(forumPosts.length/perPage);
+  if(window.forumPage>=totalPages)window.forumPage=totalPages-1;
+  var start=window.forumPage*perPage;
+  var pageItems=forumPosts.slice(start,start+perPage);
+  var cards=pageItems.map(function(p,i){
+    var idx=start+i;
     var replies=p.replies||[];
     var repliesHtml=replies.map(function(r){
       return'<div style="padding:8px 0;border-top:1px solid #F0E0F0;display:flex;gap:8px;align-items:flex-start">'+
@@ -565,6 +572,13 @@ function renderForumPosts(){
       (replies.length?'<div id="'+rid+'" style="display:none;margin-top:10px;padding-top:4px">'+repliesHtml+'</div>':'')+
     '</div>';
   }).join('');
+  var pager=totalPages>1?'<div style="display:flex;justify-content:center;gap:8px;margin-top:10px">'+
+    '<button onclick="window.forumPage=Math.max(0,window.forumPage-1);renderForumPosts()" style="background:#fff;border:1.5px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:4px 12px;font-size:12px;cursor:pointer'+(window.forumPage===0?';opacity:.3;pointer-events:none':'')+'">&lt;</button>'+
+    '<span style="font-size:12px;color:#C8A0C8;line-height:28px">'+(window.forumPage+1)+' / '+totalPages+'</span>'+
+    '<button onclick="window.forumPage=Math.min('+(totalPages-1)+',window.forumPage+1);renderForumPosts()" style="background:#fff;border:1.5px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:4px 12px;font-size:12px;cursor:pointer'+(window.forumPage>=totalPages-1?';opacity:.3;pointer-events:none':'')+'">&gt;</button>'+
+  '</div>':'';
+  list.innerHTML=cards+pager;
+  window.renderForumPosts=renderForumPosts;
 }
 
 // --- IG ---
@@ -591,14 +605,20 @@ async function generateIGPosts(){
   }catch(e){alert('生成失敗：'+e.message)}
   finally{btn.textContent='✨ 根據劇情產生 IG 貼文';btn.disabled=false;btn.style.opacity='1'}
 }
-
 function renderIGPosts(){
+  window.igPage=window.igPage||0;
+  var perPage=2;
   var list=$('ig-list');
   if(!igPosts.length){
     list.innerHTML='<div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有 IG 貼文，點上方按鈕根據劇情生成</div>';
     return;
   }
-  list.innerHTML=igPosts.map(function(p,idx){
+  var totalPages=Math.ceil(igPosts.length/perPage);
+  if(window.igPage>=totalPages)window.igPage=totalPages-1;
+  var start=window.igPage*perPage;
+  var pageItems=igPosts.slice(start,start+perPage);
+  var cards=pageItems.map(function(p,i){
+    var idx=start+i;
     try{
       var blob=new Blob([p.html],{type:'text/html;charset=utf-8'});
       var url=URL.createObjectURL(blob);
@@ -607,6 +627,13 @@ function renderIGPosts(){
       return'<div class="ig-card"><div style="padding:16px;color:#999">載入失敗</div></div>';
     }
   }).join('');
+  var pager=totalPages>1?'<div style="display:flex;justify-content:center;gap:8px;margin-top:10px">'+
+    '<button onclick="window.igPage=Math.max(0,window.igPage-1);renderIGPosts()" style="background:#fff;border:1.5px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:4px 12px;font-size:12px;cursor:pointer'+(window.igPage===0?';opacity:.3;pointer-events:none':'')+'">&lt;</button>'+
+    '<span style="font-size:12px;color:#C8A0C8;line-height:28px">'+(window.igPage+1)+' / '+totalPages+'</span>'+
+    '<button onclick="window.igPage=Math.min('+(totalPages-1)+',window.igPage+1);renderIGPosts()" style="background:#fff;border:1.5px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:4px 12px;font-size:12px;cursor:pointer'+(window.igPage>=totalPages-1?';opacity:.3;pointer-events:none':'')+'">&gt;</button>'+
+  '</div>':'';
+  list.innerHTML=cards+pager;
+  window.renderIGPosts=renderIGPosts;
 }
 
 // --- Compress ---
