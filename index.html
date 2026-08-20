@@ -114,7 +114,7 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#7c3aed}
 .phone-kor{border:1.5px solid #1a1a1a;border-radius:20px;padding:3px 11px;font-size:13px;color:#111;background:#fff;white-space:nowrap}
 .phone-chn{font-size:11px;color:#969696;font-style:italic;white-space:nowrap}
 .bubble .html-frame-wrap{width:100%;margin:10px 0}
-.bubble .html-frame{width:100%;border:none;border-radius:12px;display:block;min-height:200px;background:#fff}
+.bubble .html-frame{width:100%;border:none;border-radius:12px;display:block;min-height:300px;background:#fff;transition:height .2s}
 .bubble pre{background:#1a1a30;border:1px solid #2a2a45;border-radius:8px;padding:10px;overflow-x:auto;margin:6px 0}
 .bubble code{background:#1a1a30;padding:1px 5px;border-radius:3px;font-size:12px;color:#a78bfa;font-family:monospace}
 .bubble pre code{background:transparent;padding:0;color:#ccc;font-size:12px}
@@ -238,6 +238,27 @@ function showTab(name) {
   if (name === 'compress') renderCompressList();
 }
 
+// ─── HTML Frame Store ─────────────────────────────────────────────────────────
+window._htmlFrames = new Map();
+let _frameSeq = 0;
+
+function populateFrames(container) {
+  (container || document).querySelectorAll('iframe[data-hkey]').forEach(frame => {
+    if (frame.dataset.populated) return;
+    frame.dataset.populated = '1';
+    const html = window._htmlFrames.get(frame.dataset.hkey);
+    if (!html) return;
+    try {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open(); doc.write(html); doc.close();
+      setTimeout(() => {
+        try { frame.style.height = (doc.documentElement.scrollHeight + 8) + 'px'; }
+        catch(e) { frame.style.height = '500px'; }
+      }, 150);
+    } catch(e) { frame.style.height = '500px'; }
+  });
+}
+
 // ─── Markdown Parser ──────────────────────────────────────────────────────────
 function esc(t) {
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -350,12 +371,9 @@ function parseMarkdown(text) {
       i++; // skip closing ```
       const content = blockLines.join('\n');
       if (lang === 'html') {
-        // Render as inline iframe
-        const srcdoc = content
-          .replace(/&/g,'&amp;')
-          .replace(/"/g,'&quot;')
-          .replace(/'/g,'&#39;');
-        out.push(`<div class="html-frame-wrap"><iframe class="html-frame" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin" scrolling="no" onload="try{this.style.height=(this.contentDocument.documentElement.scrollHeight+4)+'px'}catch(e){}"></iframe></div>`);
+        const key = 'hf' + (++_frameSeq);
+        window._htmlFrames.set(key, content);
+        out.push(`<div class="html-frame-wrap"><iframe class="html-frame" data-hkey="${key}" sandbox="allow-scripts allow-same-origin"></iframe></div>`);
       } else {
         out.push(`<pre><code>${esc(content)}</code></pre>`);
       }
@@ -460,6 +478,7 @@ function appendMessage(msg) {
   wrap.appendChild(bubble);
   area.appendChild(wrap);
   area.scrollTop = area.scrollHeight;
+  populateFrames(bubble);
   return bubble;
 }
 
