@@ -65,13 +65,13 @@ a{color:#D48CB0}a:hover{color:#E8A8C8}
 .bubble pre code{background:transparent;padding:0;color:#6050A0}
 .bubble .html-frame-wrap{width:100%;margin:8px 0;overflow:hidden}
 .bubble .html-frame{width:100%;border:none;border-radius:12px;display:block;min-height:200px;background:#fff;transition:height .2s}
-.bubble .phone-card,.bubble .phone-wrap{background:#FFF4F8;border:1.5px solid #F0D0E0;border-left:3px solid #F0A8D0;border-radius:16px;padding:12px 14px;margin:10px 0;box-shadow:0 2px 10px rgba(240,168,208,.12)}
-.bubble .phone-card-header,.bubble .phone-header{font-size:11px;color:#D0A0C0;text-align:center;margin-bottom:8px;font-weight:600}
+.bubble .phone-card,.bubble .phone-wrap{background:linear-gradient(135deg,#FFD0E8,#F8B8D8);border:1.5px solid #F0C0D8;border-radius:16px;padding:16px 14px;margin:10px 0;box-shadow:0 2px 12px rgba(240,160,200,.15)}
+.bubble .phone-card-header,.bubble .phone-header{font-size:13px;color:#C080A8;text-align:center;margin-bottom:12px;font-weight:600;letter-spacing:.5px}
 .bubble .phone-card-sep{border:none;border-top:1px solid #F0E0F0;margin:6px 0}
-.bubble .phone-line{display:flex;align-items:flex-start;gap:8px;padding:3px 2px;flex-wrap:nowrap}
-.bubble .pi{color:#E8A0C8;font-size:13px;flex-shrink:0;margin-top:2px}
-.bubble .pk{border:1.5px solid #F0D0E0;border-radius:20px;padding:3px 10px;font-size:13px;color:#7860A0;background:#fff;flex-shrink:1;word-break:break-word}
-.bubble .pt{color:#C0A0C8;font-style:italic;font-size:11px;flex-shrink:0;margin-top:3px;white-space:nowrap}
+.bubble .phone-line{display:flex;align-items:center;gap:10px;padding:6px 4px;flex-wrap:nowrap}
+.bubble .pi{color:#D8A0C0;font-size:15px;flex-shrink:0}
+.bubble .pk{border:1.5px solid #F0D8E8;border-radius:20px;padding:5px 14px;font-size:14px;color:#7860A0;background:#fff;flex-shrink:1;word-break:break-word;box-shadow:0 1px 4px rgba(200,160,200,.1)}
+.bubble .pt{color:#C0A0C8;font-style:italic;font-size:12px;flex-shrink:0;white-space:nowrap}
 .bubble .phone-note{font-size:11px;color:#C8A8D0;padding:2px 0 2px 18px;font-style:italic}
 .bubble.user table,.bubble.user th,.bubble.user td{color:#fff;border-color:rgba(255,255,255,.25)}
 .bubble.user th{background:rgba(255,255,255,.15)}
@@ -90,9 +90,13 @@ a{color:#D48CB0}a:hover{color:#E8A8C8}
 .forum-time{color:#D8C0E0}
 .forum-body{font-size:13px;line-height:1.6;color:#8870A0;margin-bottom:10px}
 .forum-stats{display:flex;gap:14px;font-size:12px;color:#D0A8C8}
-/* IG cards */
-.ig-card{background:#fff;border-radius:16px;border:1.5px solid #F0E0F0;overflow:hidden;box-shadow:0 2px 10px rgba(240,180,220,.1)}
-.ig-frame{width:100%;border:none;display:block;min-height:380px;transition:height .2s}
+/* Context menu */
+.ctx-menu{position:absolute;background:#fff;border:1.5px solid #F0D0E8;border-radius:14px;box-shadow:0 4px 20px rgba(200,140,180,.2);z-index:60;min-width:120px;overflow:hidden;animation:ctxIn .15s ease}
+@keyframes ctxIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.ctx-item{padding:10px 16px;font-size:13px;color:#6B5488;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s}
+.ctx-item:hover{background:#FFF0F8}
+.ctx-item.danger{color:#E06060}
+.ctx-item.danger:hover{background:#FFF0F0}
 /* Compress */
 .c-item{display:flex;gap:10px;padding:8px 12px;border-radius:12px;cursor:pointer;background:#fff;border:1.5px solid #F0E0F0;align-items:flex-start;transition:all .15s}
 .c-item.sel{background:#FFF0F8;border-color:#F0A8D0}
@@ -165,6 +169,7 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#E890B8}
     </div>
 
     <div class="section-divider"></div>
+
     <!-- SECTION 2: FORUM -->
     <div style="padding:16px 12px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#F8E8FF,#FFE8F8);border-radius:16px;border:1.5px solid #E8D0F0">
@@ -180,22 +185,7 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#E890B8}
       </div>
     </div>
 
-    <div class="section-divider"></div>
-
-    <!-- SECTION 3: IG -->
-    <div style="padding:16px 12px 24px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#FFE0F0,#FFE8F4);border-radius:16px;border:1.5px solid #F8C8E0">
-        <span style="font-size:22px">📸</span>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:700;color:#D080A8">Instagram</div>
-          <div style="font-size:11px;color:#E0A8C0">角色的 IG 動態（HTML 嵌入）</div>
-        </div>
-        <button id="ig-gen-btn" style="background:linear-gradient(135deg,#F8A8C8,#F090B8);border:none;color:#fff;border-radius:12px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(248,168,200,.3)">✨ 根據劇情產生 IG 貼文</button>
-      </div>
-      <div id="ig-list" style="display:flex;flex-direction:column;gap:12px">
-        <div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有 IG 貼文，點上方按鈕根據劇情生成</div>
-      </div>
-    </div>
+    <div style="height:24px"></div>
   </div>
 
   <!-- ===== FIXED INPUT BAR ===== -->
@@ -275,7 +265,7 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#E890B8}
 var _p=setInterval(function(){if(!document.getElementById('chat-area'))return;clearInterval(_p);boot()},50);
 function boot(){
 var messages=[],turnCount=0,loading=false,selectedSet=new Set();
-var forumPosts=[],igPosts=[];
+var forumPosts=[];
 var DEFAULT_REMINDER='【格式提醒｜即刻生效】\n每輪必須完整輸出三個區塊，缺一不可：\n① 📊 屬性面板（表格，具體數字，每格有狀態說明）\n② 劇情正文（400字以上，第二人稱「你」，對話不超過一半）\n③ ABCDE 五個選項（表格）\n禁止輸出英文思考過程或內部草稿。\n\n【📱 社群媒體 UI 規範】\n當劇情出現以下場景時，必須在場景敘述結束後、選項出現前，插入對應的 UI：\n\n觸發條件：\n① 玩家查看手機並打開 IG／Weverse／Twitter／KakaoTalk 介面\n② 玩家收到或發出私訊，且劇情需要展示對話畫面\n③ 玩家刷新社群媒體動態\n④ 玩家看到論壇帖子或匿名投稿\n\n【手機訊息格式】\n當發生手機對話時，使用以下純文字格式（不要用 HTML）：\n📲 你收到了ㅇㅇ的訊息\n𖦹‎.𖦹‎ 韓語內容（中文翻譯）\n𖦹‎.𖦹‎ 第二句韓語（中文翻譯）\n📱END\n規則：韓語部分不准出現標點符號；如果韓語部分出現.斷句就換行成新的一條 𖦹‎.𖦹‎。\n\n【社群媒體 HTML 格式】\n除了手機訊息外，IG／Weverse／Twitter／論壇等社群畫面請用 ```html ... ``` 包裹完整 HTML。\n設計規範：\n- 最大寬度 400px，置中，模擬手機畫面\n- 深色背景（IG 黑 / Weverse 黑 / 論壇暗灰）\n- 內容必須與當前劇情即時匹配\n- IG 私訊：黑底，深灰對話框（對方），藍色對話框（玩家）\n- Weverse：黑底，紫色主色調，愛心互動\n- Twitter/X：黑底，白字，藍色連結\n- 論壇：深灰底，白字，匿名格式\n- KakaoTalk：黃色頭像，白底對話框，已讀標記\n每次必須根據劇情更新內容，禁止複製上一輪。';
 var $=function(id){return document.getElementById(id)};
 $('reminder-text').value=DEFAULT_REMINDER;
@@ -466,9 +456,9 @@ async function sendMessage(){
 
 function clearChat(){
   if(!confirm('確定清除所有對話？'))return;
-  messages=[];turnCount=0;forumPosts=[];igPosts=[];
+  messages=[];turnCount=0;forumPosts=[];
   $('chat-area').innerHTML='<div class="empty"><div class="empty-icon">💬</div><div class="empty-title">開始你的故事</div><div class="empty-sub">在設定裡貼入 API Key 和 System Prompt</div></div>';
-  renderForumPosts();renderIGPosts();updateTurnInfo();saveAll();
+  renderForumPosts();updateTurnInfo();saveAll();
 }
 
 // --- Auto-generate after each turn ---
@@ -490,22 +480,6 @@ async function autoGenerateSidePosts(apiKey){
     forumPosts=posts.concat(forumPosts).slice(0,10);
     renderForumPosts();saveAll();
   }catch(e){console.warn('Forum auto-gen failed',e)}
-  // IG
-  try{
-    var res2=await fetch('https://api.deepseek.com/v1/chat/completions',{
-      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-      body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是 NCT DREAM 成員 IG 貼文生成器。生成 1 則 NCT DREAM 成員（如 haechan_nct、na.jaemin0813、jenoyahhh、rennjun__、mark__lee、zhaboriya 等）的 IG 貼文。內容是成員自己發的日常動態，跟劇情無關也沒關係——練習室自拍、吃飯打卡、深夜感性文、成員合照、新髮色、旅行照等。用完整 HTML（含 inline style），模擬 IG 外觀（頭像圓、用戶名、漸層色塊圖片區 height:280px、愛心留言圖示、caption）。繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"HTML字串"}]。不要加其他文字。'},
-        {role:'user',content:'劇情：\n'+summary}
-      ],temperature:0.85,max_tokens:2000})
-    });
-    var data2=await res2.json();
-    var raw2=data2.choices[0]&&data2.choices[0].message&&data2.choices[0].message.content||'[]';
-    raw2=raw2.replace(/```json\n?/g,'').replace(/```/g,'').trim();
-    var posts2=JSON.parse(raw2);
-    igPosts=posts2.concat(igPosts).slice(0,6);
-    renderIGPosts();saveAll();
-  }catch(e){console.warn('IG auto-gen failed',e)}
 }
 
 // --- Forum ---
@@ -581,59 +555,76 @@ function renderForumPosts(){
   window.renderForumPosts=renderForumPosts;
 }
 
-// --- IG ---
-async function generateIGPosts(){
-  var apiKey=$('api-key').value.trim();
-  if(!apiKey){alert('請先填入 API Key');return}
-  if(!messages.length){alert('請先開始對話');return}
-  var btn=$('ig-gen-btn');btn.textContent='生成中…';btn.disabled=true;btn.style.opacity='.5';
-  var summary=messages.slice(-10).map(function(m){return(m.role==='user'?'玩家':'DM')+': '+(m.display||m.content).slice(0,200)}).join('\n');
-  try{
-    var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
-      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-      body:JSON.stringify({model:'deepseek-chat',messages:[
-        {role:'system',content:'你是 NCT DREAM 成員 IG 貼文生成器。生成 2-3 則 NCT DREAM 成員（如 haechan_nct、na.jaemin0813、jenoyahhh、rennjun__、mark__lee、zhaboriya 等）的 IG 貼文。內容是成員自己發的日常動態，跟劇情無關也沒關係——練習室自拍、吃飯打卡、深夜感性文、成員合照、新髮色、旅行照、表情包等。每則貼文用完整 HTML 格式呈現（含 inline style），模擬真實 IG 貼文外觀（頭像圓、用戶名、圖片區域用漂亮漸層色塊代替 height:280px、愛心/留言圖示、caption）。繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"完整HTML字串"}]。不要加其他文字。'},
-        {role:'user',content:'劇情摘要：\n'+summary}
-      ],temperature:0.8,max_tokens:4000})
-    });
-    var data=await res.json();
-    var raw=data.choices[0]&&data.choices[0].message&&data.choices[0].message.content||'[]';
-    raw=raw.replace(/```json\n?/g,'').replace(/```/g,'').trim();
-    var posts=JSON.parse(raw);
-    igPosts=posts.concat(igPosts).slice(0,6);
-    renderIGPosts();saveAll();
-  }catch(e){alert('生成失敗：'+e.message)}
-  finally{btn.textContent='✨ 根據劇情產生 IG 貼文';btn.disabled=false;btn.style.opacity='1'}
+// --- Edit/Delete Messages ---
+function showCtxMenu(idx,x,y){
+  closeCtxMenu();
+  var menu=document.createElement('div');menu.className='ctx-menu';menu.id='ctx-menu';
+  var isUser=messages[idx].role==='user';
+  if(isUser){
+    var editBtn=document.createElement('div');editBtn.className='ctx-item';
+    editBtn.innerHTML='✏️ 修改訊息';
+    editBtn.onclick=function(){closeCtxMenu();editMessage(idx);};
+    menu.appendChild(editBtn);
+  }
+  var delBtn=document.createElement('div');delBtn.className='ctx-item danger';
+  delBtn.innerHTML='🗑️ 撤回訊息';
+  delBtn.onclick=function(){closeCtxMenu();deleteMessage(idx);};
+  menu.appendChild(delBtn);
+  var cancelBtn=document.createElement('div');cancelBtn.className='ctx-item';
+  cancelBtn.innerHTML='✖ 取消';
+  cancelBtn.onclick=function(){closeCtxMenu();};
+  menu.appendChild(cancelBtn);
+  menu.style.left=Math.min(x,window.innerWidth-150)+'px';
+  menu.style.top=Math.min(y,window.innerHeight-100)+'px';
+  document.body.appendChild(menu);
+  setTimeout(function(){document.addEventListener('click',closeCtxMenu,{once:true})},10);
 }
-function renderIGPosts(){
-  window.igPage=window.igPage||0;
-  var perPage=2;
-  var list=$('ig-list');
-  if(!igPosts.length){
-    list.innerHTML='<div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有 IG 貼文，點上方按鈕根據劇情生成</div>';
+function closeCtxMenu(){var m=document.getElementById('ctx-menu');if(m)m.remove()}
+function editMessage(idx){
+  var msg=messages[idx];
+  var newText=prompt('修改訊息：',msg.display||msg.content);
+  if(newText===null||!newText.trim())return;
+  msg.display=newText.trim();msg.content=newText.trim();
+  refreshChat();saveAll();
+}
+function deleteMessage(idx){
+  if(!confirm('確定撤回這條訊息？'))return;
+  messages.splice(idx,1);
+  refreshChat();saveAll();
+}
+function refreshChat(){
+  var area=$('chat-area');
+  area.innerHTML='';
+  if(!messages.length){
+    area.innerHTML='<div class="empty"><div class="empty-icon">💬</div><div class="empty-title">開始你的故事</div><div class="empty-sub">在設定裡貼入 API Key 和 System Prompt</div></div>';
     return;
   }
-  var totalPages=Math.ceil(igPosts.length/perPage);
-  if(window.igPage>=totalPages)window.igPage=totalPages-1;
-  var start=window.igPage*perPage;
-  var pageItems=igPosts.slice(start,start+perPage);
-  var cards=pageItems.map(function(p,i){
-    var idx=start+i;
-    try{
-      var blob=new Blob([p.html],{type:'text/html;charset=utf-8'});
-      var url=URL.createObjectURL(blob);
-      return'<div class="ig-card"><iframe class="ig-frame" id="ig-frame-'+idx+'" src="'+url+'" onload="setTimeout(()=>resizeFrame(this),300)"></iframe></div>';
-    }catch(e){
-      return'<div class="ig-card"><div style="padding:16px;color:#999">載入失敗</div></div>';
-    }
-  }).join('');
-  var pager=totalPages>1?'<div style="display:flex;justify-content:center;gap:8px;margin-top:10px">'+
-    '<button onclick="window.igPage=Math.max(0,window.igPage-1);renderIGPosts()" style="background:#fff;border:1.5px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:4px 12px;font-size:12px;cursor:pointer'+(window.igPage===0?';opacity:.3;pointer-events:none':'')+'">&lt;</button>'+
-    '<span style="font-size:12px;color:#C8A0C8;line-height:28px">'+(window.igPage+1)+' / '+totalPages+'</span>'+
-    '<button onclick="window.igPage=Math.min('+(totalPages-1)+',window.igPage+1);renderIGPosts()" style="background:#fff;border:1.5px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:4px 12px;font-size:12px;cursor:pointer'+(window.igPage>=totalPages-1?';opacity:.3;pointer-events:none':'')+'">&gt;</button>'+
-  '</div>':'';
-  list.innerHTML=cards+pager;
-  window.renderIGPosts=renderIGPosts;
+  messages.forEach(function(m){appendMessage(m)});
+}
+function bindCtxMenu(){
+  var area=$('chat-area');
+  area.addEventListener('contextmenu',function(e){
+    var wrap=e.target.closest('.bwrap');
+    if(!wrap)return;
+    e.preventDefault();
+    var idx=parseInt(wrap.dataset.idx);
+    if(isNaN(idx))return;
+    showCtxMenu(idx,e.clientX,e.clientY);
+  });
+  var longTimer=null;
+  area.addEventListener('touchstart',function(e){
+    var wrap=e.target.closest('.bwrap');
+    if(!wrap)return;
+    var idx=parseInt(wrap.dataset.idx);
+    if(isNaN(idx))return;
+    longTimer=setTimeout(function(){
+      e.preventDefault();
+      var t=e.touches[0];
+      showCtxMenu(idx,t.clientX,t.clientY);
+    },500);
+  },{passive:false});
+  area.addEventListener('touchend',function(){if(longTimer)clearTimeout(longTimer)});
+  area.addEventListener('touchmove',function(){if(longTimer)clearTimeout(longTimer)});
 }
 
 // --- Compress ---
@@ -729,7 +720,7 @@ function exportChat(){
 var STORAGE_KEY='sim_v2';
 function saveAll(){
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify({
-    messages:messages,turnCount:turnCount,forumPosts:forumPosts,igPosts:igPosts,
+    messages:messages,turnCount:turnCount,forumPosts:forumPosts,
     apiKey:$('api-key').value,systemPrompt:$('system-prompt').value,
     reminderText:$('reminder-text').value,model:$('model-select').value,
     temperature:$('temp').value,maxTokens:$('max-tokens').value,
@@ -749,7 +740,6 @@ function loadAll(){
     if(d.autoReminder!==undefined)$('auto-reminder').checked=d.autoReminder;
     if(d.reminderEvery)$('reminder-every').value=d.reminderEvery;
     if(d.forumPosts)forumPosts=d.forumPosts;
-    if(d.igPosts)igPosts=d.igPosts;
     if(d.messages&&d.messages.length){
       messages=d.messages;turnCount=d.turnCount||0;
       var area=$('chat-area');area.innerHTML='';
@@ -768,7 +758,6 @@ $('btn-clear').addEventListener('click',clearChat);
 $('close-settings').addEventListener('click',function(){closeModal('settings-modal')});
 $('close-compress').addEventListener('click',function(){closeModal('compress-modal')});
 $('forum-gen-btn').addEventListener('click',generateForumPosts);
-$('ig-gen-btn').addEventListener('click',generateIGPosts);
 $('btn-select-half').addEventListener('click',selectHalf);
 $('btn-clear-sel').addEventListener('click',clearSel);
 $('compress-btn').addEventListener('click',compressSelected);
@@ -783,7 +772,7 @@ $('reminder-every').addEventListener('input',function(){updateTurnInfo();saveAll
   $(id).addEventListener('change',saveAll);$(id).addEventListener('input',saveAll);
 });
 
-loadAll();renderForumPosts();renderIGPosts();updateTurnInfo();updateSendBtn();
+loadAll();renderForumPosts();updateTurnInfo();updateSendBtn();bindCtxMenu();
 }
 })();
 
