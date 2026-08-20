@@ -4,12 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light only">
-<style>:root{color-scheme:light only!important}html,body{background-color:#FFF2D6!important;color:#6B5488!important}@media(prefers-color-scheme:dark){html,body{background-color:#FFF2D6!important;color:#6B5488!important}}</style>
+<meta name="supported-color-schemes" content="light only">
+<meta name="theme-color" content="#FFF2D6">
+<style>
+:root{color-scheme:light only!important}
+html,body{background:#FFF2D6!important;color:#6B5488!important;color-scheme:light only!important}
+div,section,main,article,aside,header,footer,nav,textarea,input,select,button,span,p,table,th,td,tr,label,h1,h2,h3,pre,code,blockquote{color-scheme:light only!important}
+</style>
 
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+:root{color-scheme:light only!important}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#FFF2D6;color:#6B5488;overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#FFF2D6!important;color:#6B5488!important;overflow-x:hidden;-webkit-text-size-adjust:100%}
 a{color:#D48CB0}a:hover{color:#E8A8C8}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:#E8B8D8;border-radius:4px}
@@ -158,7 +165,6 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#E890B8}
     </div>
 
     <div class="section-divider"></div>
-
     <!-- SECTION 2: FORUM -->
     <div style="padding:16px 12px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#F8E8FF,#FFE8F8);border-radius:16px;border:1.5px solid #E8D0F0">
@@ -329,14 +335,30 @@ function parseMarkdown(text){
       continue;
     }
     if(/^[━─\-=_]{3,}$/.test(line.trim())){out.push('<hr>');i++;continue;}
+    // 【插播】special card
+    if(line.trim().startsWith('【插播')){
+      var iTitle=line.trim();
+      var iLines=[];i++;
+      while(i<lines.length&&lines[i].trim()!==''&&!lines[i].trim().startsWith('【區塊')&&!lines[i].trim().startsWith('━')){
+        iLines.push(lines[i]);i++;
+      }
+      var iBody=iLines.map(function(l){
+        // Split dialogue: Name：「text」 or Name：text
+        var dl=l.match(/^(.+?)[：:](.+)$/);
+        if(dl){return'<div style="margin:6px 0"><span style="font-weight:700;color:#B878C8">'+esc(dl[1].trim())+'</span><span style="color:#8870A0;margin-left:2px">'+inlineFormat(dl[2].trim())+'</span></div>';}
+        return'<p style="margin:4px 0;color:#8870A0">'+inlineFormat(l)+'</p>';
+      }).join('');
+      out.push('<div style="background:linear-gradient(135deg,#F8E8FF,#FFE8F4);border:1.5px solid #E8D0F0;border-radius:16px;padding:14px 16px;margin:14px 0;box-shadow:0 2px 10px rgba(200,160,220,.12)"><div style="font-size:13px;font-weight:700;color:#B070A0;margin-bottom:8px;display:flex;align-items:center;gap:6px">🎬 '+esc(iTitle.replace(/^【/,'').replace(/】$/,''))+'</div>'+iBody+'</div>');
+      continue;
+    }
     var m;
     if((m=line.match(/^###\s+(.+)/))){out.push('<h3>'+inlineFormat(m[1])+'</h3>');i++;continue;}
     if((m=line.match(/^##\s+(.+)/))){out.push('<h2>'+inlineFormat(m[1])+'</h2>');i++;continue;}
     if((m=line.match(/^#\s+(.+)/))){out.push('<h1>'+inlineFormat(m[1])+'</h1>');i++;continue;}
     if(line.startsWith('>')){out.push('<blockquote>'+inlineFormat(line.slice(1).trim())+'</blockquote>');i++;continue;}
     if(/^[\-\*✦•]\s+/.test(line)){out.push('<div class="li">'+inlineFormat(line.replace(/^[\-\*✦•]\s+/,''))+'</div>');i++;continue;}
-    if(!line.trim()){out.push('<div class="sp"></div>');i++;continue;}
-    out.push('<p>'+inlineFormat(line)+'</p>');i++;
+    if(!line.trim()){out.push('<div class="sp" style="height:10px"></div>');i++;continue;}
+    out.push('<p style="margin:3px 0">'+inlineFormat(line)+'</p>');i++;
   }
   return out.join('');
 }
