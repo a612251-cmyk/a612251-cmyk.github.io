@@ -95,6 +95,9 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#7c3aed}
 .bubble pre code{background:transparent;padding:0;color:#ccc}
 .bubble .html-frame-wrap{width:100%;margin:8px 0;overflow:hidden}
 .bubble .html-frame{width:100%;border:none;border-radius:10px;display:block;min-height:200px;background:#fff;transition:height .2s}
+.bubble .phone-card{background:#0f0f22;border:1px solid #35356a;border-radius:14px;padding:12px 14px;margin:10px 0}
+.bubble .phone-card-header{font-size:11px;color:#6666aa;text-align:center;margin-bottom:10px;letter-spacing:.5px}
+.bubble .phone-card-sep{border:none;border-top:1px solid #25255a;margin:8px 0}
 .bubble .phone-header{font-size:12px;color:#888;text-align:center;margin:8px 0 3px}
 .bubble .phone-line{display:flex;align-items:center;gap:6px;padding:3px 2px;flex-wrap:wrap}
 .bubble .pi{color:#c4b5fd;font-size:13px;flex-shrink:0;letter-spacing:2px}
@@ -246,7 +249,6 @@ function inlineFormat(t) {
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/`(.+?)`/g,'<code>$1</code>');
 }
-
 function parseTable(lines) {
   const rows = lines
     .filter(l => !/^\|[\s\-\|:]+\|$/.test(l.trim()))
@@ -358,17 +360,39 @@ function parseMarkdown(text) {
       }
       continue;
     }
-    // Phone message header: 你收到了ㅇㅇ的訊息
+    // Phone message block (state machine)
     if (/你收到了.+的訊息/.test(line) || /你收到了.+的消息/.test(line)) {
-      out.push(`<div class="phone-header">${esc(line)}</div>`);
-      i++; continue;
+      // Open phone card
+      out.push('<div class="phone-card">');
+      out.push(`<div class="phone-card-header">📱 ${esc(line)}</div>`);
+      out.push('<hr class="phone-card-sep">');
+      i++;
+      // Skip --- separator if present
+      if (i < lines.length && lines[i].trim() === '---') i++;
+      // Collect all phone lines
+      while (i < lines.length) {
+        const pl = lines[i];
+        if (/^𖦹/.test(pl)) {
+          const pm = pl.match(/^𖦹[.。]𖦹\s+([\s\S]+?)\s+（(.+?)）\s*$/);
+          if (pm) {
+            out.push(`<div class="phone-line"><span class="pi">𖦹.𖦹</span><span class="pk">${esc(pm[1])}</span><span class="pt">（${esc(pm[2])}）</span></div>`);
+          } else {
+            out.push(`<div class="phone-line"><span class="pi">𖦹.𖦹</span><span class="pk">${esc(pl.replace(/^𖦹[.。]𖦹\s*/,''))}</span></div>`);
+          }
+          i++;
+        } else if (/^注[：:]/.test(pl)) {
+          out.push(`<div class="phone-note">${esc(pl)}</div>`);
+          i++;
+        } else if (pl.trim() === '' || pl.trim() === '---') {
+          i++; break;
+        } else {
+          break;
+        }
+      }
+      out.push('</div>'); // close phone-card
+      continue;
     }
-    // Phone separator (--- after header)
-    if (line.trim() === '---' && i > 0 && /你收到了/.test(lines[i-1]||'')) {
-      out.push('<hr class="phone-sep">');
-      i++; continue;
-    }
-    // Phone message line: 𖦹.𖦹 韓文 （中文）
+    // Standalone 𖦹 line outside card
     if (/^𖦹/.test(line)) {
       const m = line.match(/^𖦹[.。]𖦹\s+([\s\S]+?)\s+（(.+?)）\s*$/);
       if (m) {
@@ -378,18 +402,7 @@ function parseMarkdown(text) {
       }
       i++; continue;
     }
-    // Korean dialogue line without 𖦹 prefix: 한국어 （中文翻譯）
-    // Detects lines with Hangul characters followed by （Chinese）
-    if (/[\uAC00-\uD7AF]/.test(line) && /（.+）/.test(line)) {
-      const m = line.match(/^(.*?)（(.+?)）\s*$/);
-      if (m) {
-        out.push(`<div class="phone-line"><span class="pk">${esc(m[1].trim())}</span><span class="pt">（${esc(m[2])}）</span></div>`);
-      } else {
-        out.push(`<p>${processInline(line)}</p>`);
-      }
-      i++; continue;
-    }
-    // Note after phone line: 注：...
+    // Note line
     if (/^注[：:]/.test(line)) {
       out.push(`<div class="phone-note">${esc(line)}</div>`);
       i++; continue;
@@ -445,7 +458,6 @@ function updateTurnInfo() {
   document.getElementById('turn-info').textContent =
     `第 ${turnCount} 輪${auto ? ` · 下次提醒：第 ${next} 輪` : ''}`;
 }
-
 function appendMessage(msg) {
   const area = document.getElementById('chat-area');
   const empty = area.querySelector('.empty');
@@ -487,7 +499,6 @@ function showLoading() {
   area.appendChild(wrap);
   area.scrollTop = area.scrollHeight;
 }
-
 function hideLoading() {
   const el = document.getElementById('loading-bubble');
   if (el) el.remove();
