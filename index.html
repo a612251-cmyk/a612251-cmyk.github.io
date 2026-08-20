@@ -1,541 +1,727 @@
 <!DOCTYPE html>
-
 <html lang="zh-Hant">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-
-
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
-
 *{box-sizing:border-box;margin:0;padding:0}
-
 body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#FFF5E4;color:#4A3560;overflow-x:hidden;-webkit-text-size-adjust:100%}
-
 a{color:#B07CC8}a:hover{color:#D4A0E8}
-
 ::-webkit-scrollbar{width:5px}
-
 ::-webkit-scrollbar-thumb{background:#D4B8E8;border-radius:4px}
-
 ::-webkit-scrollbar-track{background:transparent}
-
 .section-divider{height:4px;background:linear-gradient(90deg,#F4D0E8,#D4B8F0,#B8D4F0,#F4D0E8);border-radius:2px;margin:0 16px}
-
 /* Chat bubbles */
-
 .bwrap{display:flex;flex-direction:column;gap:3px}
-
 .bwrap.user{align-items:flex-end}
-
 .bwrap.dm{flex-direction:row;align-items:flex-start;gap:10px}
-
 .dm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#D4B8F0,#F0C8E0);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#7050A0;border:2px solid #E8D0F4;margin-top:20px}
-
 .dm-content{display:flex;flex-direction:column;gap:3px;min-width:0}
-
 .role-lbl{font-size:12px;color:#B8A0C8;padding:0 4px;font-weight:500}
-
 .role-lbl.user{color:#D07898}
-
 .role-lbl.dm{color:#8068A8}
-
 .bubble{padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.7;word-break:break-word;max-width:88%;overflow-x:hidden}
-
 .bubble.user{background:linear-gradient(135deg,#E8A0C8,#D480B0);color:#fff;border-radius:18px 18px 4px 18px;box-shadow:0 2px 8px rgba(212,128,176,.25)}
-
 .bubble.dm{background:#fff;border:1.5px solid #E8D8F0;border-radius:18px 18px 18px 4px;box-shadow:0 2px 8px rgba(180,160,210,.12)}
-
 .bubble.summary{background:#F8F0FF;border-color:#D4B8F0}
-
 .dots{display:flex;gap:4px;align-items:center;height:20px}
-
 .dot{width:7px;height:7px;border-radius:50%;background:#C8A0E0;animation:blink 1.2s ease-in-out infinite}
-
 .dot:nth-child(2){animation-delay:.2s}
-
 .dot:nth-child(3){animation-delay:.4s}
-
 @keyframes blink{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
-
 .err-box{background:#FFF0F0;border:1.5px solid #F0A0A0;border-radius:12px;padding:10px 14px;color:#C04040;font-size:13px}
-
 .empty{text-align:center;margin:auto;padding:40px 20px}
-
 .empty-icon{font-size:40px;margin-bottom:8px}
-
 .empty-title{font-size:15px;color:#B07CC8;font-weight:600;margin-bottom:4px}
-
 .empty-sub{font-size:13px;color:#C8B8D8}
-
 /* Bubble inner */
-
 .bubble table{width:100%;border-collapse:collapse;margin:6px 0;font-size:12px;display:block;overflow-x:auto}
-
 .bubble th{background:#F4E8FF;color:#7050A0;padding:5px 8px;text-align:left;border:1px solid #E8D8F0;font-weight:600;white-space:nowrap}
-
 .bubble td{padding:4px 8px;border:1px solid #F0E4F8;color:#5A4070;font-size:12px}
-
 .bubble tr:nth-child(even) td{background:#FBF6FF}
-
 .bubble hr{border:none;border-top:1px solid #E8D8F0;margin:8px 0}
-
 .bubble h1{color:#9068C0;font-size:15px;margin:8px 0 4px}
-
 .bubble h2{color:#A070D0;font-size:14px;margin:6px 0 3px}
-
 .bubble h3{color:#B080D8;font-size:13px;margin:5px 0 2px}
-
 .bubble p{margin:3px 0}
-
 .bubble strong{color:#6040A0}
-
 .bubble em{color:#8060B0;font-style:italic}
-
 .bubble code{background:#F4ECFF;padding:1px 5px;border-radius:4px;font-size:11px;color:#8060B0;font-family:monospace}
-
 .bubble blockquote{background:#F8F2FF;border-left:3px solid #C8A0E0;padding:6px 10px;margin:5px 0;border-radius:0 8px 8px 0;color:#8878A0;font-size:13px}
-
 .bubble .sp{height:4px}
-
 .bubble .li{padding:2px 0 2px 4px;color:#5A4070;font-size:13px}
-
 .bubble pre{background:#F6F0FF;border:1px solid #E8D8F0;border-radius:10px;padding:10px;overflow-x:auto;margin:6px 0}
-
 .bubble pre code{background:transparent;padding:0;color:#6050A0}
-
 .bubble .html-frame-wrap{width:100%;margin:8px 0;overflow:hidden}
-
 .bubble .html-frame{width:100%;border:none;border-radius:12px;display:block;min-height:200px;background:#fff;transition:height .2s}
-
 .bubble .phone-card,.bubble .phone-wrap{background:#F8F0FF;border:1.5px solid #D4C0E8;border-left:3px solid #C8A0E0;border-radius:14px;padding:12px 14px;margin:10px 0;box-shadow:0 2px 8px rgba(180,140,220,.1)}
-
 .bubble .phone-card-header,.bubble .phone-header{font-size:11px;color:#A090C0;text-align:center;margin-bottom:8px;font-weight:500}
-
 .bubble .phone-card-sep{border:none;border-top:1px solid #E8D8F0;margin:6px 0}
-
 .bubble .phone-line{display:flex;align-items:flex-start;gap:8px;padding:3px 2px;flex-wrap:nowrap}
-
 .bubble .pi{color:#C8A0E0;font-size:13px;flex-shrink:0;margin-top:2px}
-
 .bubble .pk{border:1.5px solid #D4C0E8;border-radius:20px;padding:3px 10px;font-size:13px;color:#5A4070;background:#fff;flex-shrink:1;word-break:break-word}
-
 .bubble .pt{color:#A090C0;font-style:italic;font-size:11px;flex-shrink:0;margin-top:3px;white-space:nowrap}
-
 .bubble .phone-note{font-size:11px;color:#B0A0C0;padding:2px 0 2px 18px;font-style:italic}
-
 .bubble.user table,.bubble.user th,.bubble.user td{color:#fff;border-color:rgba(255,255,255,.25)}
-
 .bubble.user th{background:rgba(255,255,255,.15)}
-
 .bubble.user h1,.bubble.user h2,.bubble.user h3,.bubble.user strong{color:#fff}
-
 .bubble.user em{color:rgba(255,255,255,.9)}
-
 .bubble.user code{background:rgba(255,255,255,.2);color:#fff}
-
 .bubble.user blockquote{border-left-color:rgba(255,255,255,.4);color:rgba(255,255,255,.85)}
-
 .bubble.user .li{color:#fff}
-
 .bubble.user tr:nth-child(even) td{background:rgba(255,255,255,.08)}
-
 /* Forum cards */
-
 .forum-card{background:#fff;border-radius:14px;padding:14px 16px;border:1.5px solid #E8E0F0;box-shadow:0 2px 10px rgba(180,160,210,.08);transition:transform .15s}
-
 .forum-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(180,160,210,.15)}
-
 .forum-board{display:inline-block;background:#F0E4FF;color:#8868C0;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-bottom:6px}
-
 .forum-title{font-size:15px;font-weight:700;color:#4A3560;margin-bottom:4px}
-
 .forum-author{font-size:12px;color:#B8A0C8;margin-bottom:8px}
-
 .forum-time{color:#C8B8D8}
-
 .forum-body{font-size:13px;line-height:1.6;color:#6A5880;margin-bottom:10px}
-
 .forum-stats{display:flex;gap:14px;font-size:12px;color:#B8A0C8}
-
 /* IG cards */
-
 .ig-card{background:#fff;border-radius:14px;border:1.5px solid #E8E0F0;overflow:hidden;box-shadow:0 2px 10px rgba(180,160,210,.08)}
-
 .ig-frame{width:100%;border:none;display:block;min-height:380px;transition:height .2s}
-
 /* Compress */
-
 .c-item{display:flex;gap:10px;padding:8px 12px;border-radius:10px;cursor:pointer;background:#fff;border:1.5px solid #E8E0F0;align-items:flex-start;transition:all .15s}
-
 .c-item.sel{background:#F4E8FF;border-color:#C8A0E0}
-
 .cbox{width:18px;height:18px;border-radius:5px;border:2px solid #D4C0E8;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;transition:all .15s}
-
 .cbox.on{background:#B07CC8;border-color:#C890E0;color:#fff}
-
 .c-info{flex:1;overflow:hidden}
-
 .c-role{font-size:11px;font-weight:600;display:block;margin-bottom:2px}
-
 .c-role.user{color:#D07898}
-
 .c-role.dm{color:#8068A8}
-
 .c-preview{font-size:12px;color:#B8A0C8;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
 /* Modal */
-
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(74,53,96,.4);backdrop-filter:blur(6px);z-index:100;align-items:center;justify-content:center;padding:16px}
-
 .modal-box{background:#FFF8F0;border-radius:20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(100,60,140,.2);border:1.5px solid #E8D8F0}
-
 .modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid #F0E4F8;position:sticky;top:0;background:#FFF8F0;border-radius:20px 20px 0 0;z-index:1}
-
 .modal-body{padding:16px 20px}
-
 .modal-close{width:32px;height:32px;border-radius:50%;background:#F4E8FF;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8868C0}
-
 .modal-close:hover{background:#E8D0F8}
-
 input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
-
 @media(max-width:480px){
-
   .bubble{font-size:14px;max-width:92%;line-height:1.7}
-
   .bubble table{font-size:11px}
-
   .forum-title{font-size:14px}
-
 }
-
 </style>
 
 
-
-
-
 </head>
-
 <body>
-
 <div style="height:100dvh;display:flex;flex-direction:column;background:#FFF5E4;overflow:hidden">
-
   <!-- ===== HEADER ===== -->
-
   <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(135deg,#FFF0E8,#F8E8FF);border-bottom:2px solid #E8D8F0;flex-shrink:0;position:sticky;top:0;z-index:50">
-
     <div style="font-size:20px">💜</div>
-
     <div style="flex:1;min-width:0">
-
       <div style="font-size:16px;font-weight:700;color:#6040A0">劇情模擬器</div>
-
       <div id="turn-info" style="font-size:11px;color:#B8A0C8">第 0 輪</div>
-
     </div>
-
     <select id="model-select" style="background:#fff;color:#7050A0;border:1.5px solid #D4C0E8;border-radius:10px;padding:5px 8px;font-size:11px;cursor:pointer;outline:none;font-family:inherit;flex-shrink:0">
-
       <option value="deepseek-chat">Chat（推薦）</option>
-
       <option value="deepseek-v4-flash">V4 Flash</option>
-
       <option value="deepseek-v4-pro">V4 Pro</option>
-
       <option value="deepseek-reasoner">Reasoner</option>
-
     </select>
-
     <div style="display:flex;gap:4px;flex-shrink:0">
-
       <button id="btn-settings" style="background:#fff;border:1.5px solid #D4C0E8;color:#8868C0;border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">⚙️</button>
-
       <button id="btn-compress" style="background:#fff;border:1.5px solid #D4C0E8;color:#8868C0;border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">✂️</button>
-
       <button id="btn-export" style="background:#fff;border:1.5px solid #D4C0E8;color:#8868C0;border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">💾</button>
-
       <button id="btn-clear" style="background:#fff;border:1.5px solid #F0B8B8;color:#D07070;border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">🗑️</button>
-
     </div>
-
   </div>
-
-
 
   <!-- ===== SCROLLABLE CONTENT ===== -->
-
   <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:150px" id="main-scroll">
 
-
-
     <!-- SECTION 1: CHAT -->
-
     <div style="padding:10px 12px 16px">
-
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#F8E8FF,#FFF0F8);border-radius:14px;border:1.5px solid #E8D0F4">
-
         <span style="font-size:22px">💬</span>
-
         <div>
-
           <div style="font-size:14px;font-weight:700;color:#7050A0">聊天對話</div>
-
           <div style="font-size:11px;color:#B8A0C8">與 DM 的即時對話</div>
-
         </div>
-
       </div>
-
       <div id="chat-area" style="display:flex;flex-direction:column;gap:10px;min-height:60vh">
-
         <div class="empty">
-
           <div class="empty-icon">💬</div>
-
           <div class="empty-title">開始你的故事</div>
-
           <div class="empty-sub">在設定裡貼入 API Key 和 System Prompt</div>
-
         </div>
-
       </div>
-
     </div>
 
-
-
     <div class="section-divider"></div>
-
-
 
     <!-- SECTION 2: FORUM -->
-
     <div style="padding:16px 12px">
-
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#E8F0FF,#F0E8FF);border-radius:14px;border:1.5px solid #D0D8F4">
-
         <span style="font-size:22px">📋</span>
-
         <div style="flex:1">
-
           <div style="font-size:14px;font-weight:700;color:#5060A0">論壇</div>
-
           <div style="font-size:11px;color:#A0B0D0">根據劇情動態產生的貼文</div>
-
         </div>
-
         <button id="forum-gen-btn" style="background:linear-gradient(135deg,#C8A0E0,#A888D0);border:none;color:#fff;border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(168,136,208,.3)">✨ 根據劇情產生貼文</button>
-
       </div>
-
       <div id="forum-list" style="display:flex;flex-direction:column;gap:10px">
-
         <div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有貼文，點上方按鈕根據劇情生成</div>
-
       </div>
-
     </div>
-
-
 
     <div class="section-divider"></div>
 
-
-
     <!-- SECTION 3: IG -->
-
     <div style="padding:16px 12px 24px">
-
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#FFE8F0,#F8E0F0);border-radius:14px;border:1.5px solid #F0C8D8">
-
         <span style="font-size:22px">📸</span>
-
         <div style="flex:1">
-
           <div style="font-size:14px;font-weight:700;color:#A06080">Instagram</div>
-
           <div style="font-size:11px;color:#D0A0B8">角色的 IG 動態（HTML 嵌入）</div>
-
         </div>
-
         <button id="ig-gen-btn" style="background:linear-gradient(135deg,#E8A0C0,#D080A8);border:none;color:#fff;border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(208,128,168,.3)">✨ 根據劇情產生 IG 貼文</button>
-
       </div>
-
       <div id="ig-list" style="display:flex;flex-direction:column;gap:12px">
-
         <div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有 IG 貼文，點上方按鈕根據劇情生成</div>
-
       </div>
-
     </div>
-
   </div>
-
-
 
   <!-- ===== FIXED INPUT BAR ===== -->
-
   <div style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(255,245,228,0),#FFF5E4 8px);padding:6px 10px;z-index:40;padding-bottom:max(8px,env(safe-area-inset-bottom))">
-
     <div style="background:#fff;border:1.5px solid #D4C0E8;border-radius:16px;overflow:hidden;box-shadow:0 -2px 12px rgba(180,160,210,.1)">
-
       <textarea id="msg-input" rows="2" placeholder="輸入訊息… (Enter 送出)" style="width:100%;background:transparent;border:none;outline:none;color:#4A3560;padding:10px 14px;resize:none;font-family:inherit;font-size:15px;line-height:1.5;display:block"></textarea>
-
       <div style="display:flex;align-items:center;gap:6px;padding:4px 10px 8px;border-top:1px solid #F0E8F8">
-
         <button id="btn-reminder" style="background:#F4E8FF;border:1px solid #D4C0E8;color:#8868C0;border-radius:8px;padding:3px 8px;font-size:11px;cursor:pointer;white-space:nowrap;font-weight:500">📋 格式提醒</button>
-
         <div style="flex:1"></div>
-
         <button id="send-btn" disabled style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#C8A0E0,#A080D0);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(168,128,224,.3)">↑</button>
-
       </div>
-
     </div>
-
   </div>
-
-
 
   <!-- ===== SETTINGS MODAL ===== -->
-
   <div id="settings-modal" class="modal-overlay">
-
     <div class="modal-box">
-
       <div class="modal-header">
-
         <span style="font-size:15px;font-weight:700;color:#6040A0">⚙️ 設定</span>
-
         <button id="close-settings" class="modal-close">✕</button>
-
       </div>
-
       <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
-
         <div>
-
           <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">DeepSeek API Key</label>
-
           <input id="api-key" type="password" placeholder="sk-..." style="width:100%;background:#fff;border:1.5px solid #E0D4F0;color:#4A3560;border-radius:10px;padding:8px 12px;font-size:15px;outline:none;font-family:inherit">
-
         </div>
-
         <div>
-
           <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">System Prompt</label>
-
           <textarea id="system-prompt" rows="8" placeholder="在此貼入 System Prompt…" style="width:100%;background:#fff;border:1.5px solid #E0D4F0;color:#4A3560;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:80px"></textarea>
-
         </div>
-
         <div>
-
           <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">格式提醒內容</label>
-
           <textarea id="reminder-text" rows="5" style="width:100%;background:#fff;border:1.5px solid #E0D4F0;color:#4A3560;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:60px"></textarea>
-
         </div>
-
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-
           <div>
-
             <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">Temperature: <span id="temp-val">0.75</span></label>
-
             <input type="range" id="temp" min="0" max="1.5" step="0.05" value="0.75">
-
           </div>
-
           <div>
-
             <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">Max Tokens: <span id="tokens-val">4000</span></label>
-
             <input type="range" id="max-tokens" min="500" max="8000" step="100" value="4000">
-
           </div>
-
         </div>
-
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-
           <input type="checkbox" id="auto-reminder" checked style="accent-color:#B07CC8">
-
           <label style="font-size:12px;color:#8878A0" for="auto-reminder">自動格式提醒（每</label>
-
           <input type="number" id="reminder-every" value="10" min="1" max="50" style="width:55px;background:#fff;border:1.5px solid #E0D4F0;color:#4A3560;border-radius:8px;padding:5px 8px;font-size:13px;outline:none;font-family:inherit">
-
           <label style="font-size:12px;color:#8878A0">輪）</label>
-
         </div>
-
       </div>
-
     </div>
-
   </div>
-
-
 
   <!-- ===== COMPRESS MODAL ===== -->
-
   <div id="compress-modal" class="modal-overlay">
-
     <div class="modal-box" style="max-height:90vh">
-
       <div class="modal-header">
-
         <span style="font-size:15px;font-weight:700;color:#6040A0">✂️ 壓縮對話</span>
-
         <button id="close-compress" class="modal-close">✕</button>
-
       </div>
-
       <div style="display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid #F0E8F8;flex-wrap:wrap">
-
         <span id="sel-count" style="color:#8878A0;font-size:12px;font-weight:500">已選 0 條</span>
-
         <div style="flex:1"></div>
-
         <button id="btn-select-half" style="background:#F4E8FF;border:1px solid #D4C0E8;color:#8868C0;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:500">選前一半</button>
-
         <button id="btn-clear-sel" style="background:#F4E8FF;border:1px solid #D4C0E8;color:#8868C0;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:500">清除選擇</button>
-
       </div>
-
       <div id="compress-list" style="flex:1;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:6px;max-height:50vh;-webkit-overflow-scrolling:touch"></div>
-
       <div style="padding:12px 16px;border-top:1px solid #F0E8F8">
-
         <button id="compress-btn" disabled style="width:100%;background:linear-gradient(135deg,#C8A0E0,#A888D0);border:none;color:#fff;border-radius:12px;padding:12px;font-size:14px;cursor:pointer;font-weight:600;opacity:.4;box-shadow:0 2px 10px rgba(168,136,208,.3)">壓縮選中的 0 條</button>
-
       </div>
-
     </div>
-
   </div>
-
 </div>
-
 <script>
-
 (function(){
-
 var _p=setInterval(function(){if(!document.getElementById('chat-area'))return;clearInterval(_p);boot()},50);
-
 function boot(){
-
 var messages=[],turnCount=0,loading=false,selectedSet=new Set();
-
 var forumPosts=[],igPosts=[];
+var DEFAULT_REMINDER='【格式提醒｜即刻生效】\n每輪必須完整輸出三個區塊，缺一不可：\n① 📊 屬性面板（表格，具體數字，每格有狀態說明）\n② 劇情正文（400字以上，第二人稱「你」，對話不超過一半）\n③ ABCDE 五個選項（表格）\n禁止輸出英文思考過程或內部草稿。\n\n【📱 社群媒體 UI 規範】\n當劇情出現以下場景時，必須在場景敘述結束後、選項出現前，插入對應的 UI：\n\n觸發條件：\n① 玩家查看手機並打開 IG／Weverse／Twitter／KakaoTalk 介面\n② 玩家收到或發出私訊，且劇情需要展示對話畫面\n③ 玩家刷新社群媒體動態\n④ 玩家看到論壇帖子或匿名投稿\n\n【手機訊息格式】\n當發生手機對話時，使用以下純文字格式（不要用 HTML）：\n📲 你收到了ㅇㅇ的訊息\n𖦹‎.𖦹‎ 韓語內容（中文翻譯）\n𖦹‎.𖦹‎ 第二句韓語（中文翻譯）\n📱END\n規則：韓語部分不准出現標點符號；如果韓語部分出現.斷句就換行成新的一條 𖦹‎.𖦹‎。\n\n【社群媒體 HTML 格式】\n除了手機訊息外，IG／Weverse／Twitter／論壇等社群畫面請用 ```html ... ``` 包裹完整 HTML。\n設計規範：\n- 最大寬度 400px，置中，模擬手機畫面\n- 深色背景（IG 黑 / Weverse 黑 / 論壇暗灰）\n- 內容必須與當前劇情即時匹配\n- IG 私訊：黑底，深灰對話框（對方），藍色對話框（玩家）\n- Weverse：黑底，紫色主色調，愛心互動\n- Twitter/X：黑底，白字，藍色連結\n- 論壇：深灰底，白字，匿名格式\n- KakaoTalk：黃色頭像，白底對話框，已讀標記\n每次必須根據劇情更新內容，禁止複製上一輪。';
+var $=function(id){return document.getElementById(id)};
+$('reminder-text').value=DEFAULT_REMINDER;
 
-var DEFAULT_REMINDER='【格式提醒｜即刻生效】\n每輪必須完整輸出三個區塊，缺一不可：\n① 📊 屬性面板（表格，具體數字，每格有狀態說明）\n② 劇情正文（400字以上，第二人稱「你」，對話不超過一半）\n③ ABCDE 五個選項（表格）\n禁止輸出英文思考過程或內部草稿。\n\n【📱 社群媒體 UI 規範】\n當劇情出現以下場景時，必須在場景敘述結束後、選項出現前，插入對應的 UI：\n\n觸發條件：\n① 玩家查看手機並打開 IG／Weverse／Twitter／KakaoTalk 介面\n② 玩家收到或發出私訊，且劇情需要展示對話畫面\n③ 玩家刷新社群媒體動態\n④ 玩家看到論壇帖子或匿名投稿\n\n【手機訊息格式】\n當發生手機對話時，使用以下純文字格式（不要用 HTML）：\n📲 你收到了ㅇㅇ的訊息\n𖦹‎.𖦹‎ 韓語內容（中文翻譯）\n𖦹‎.𖦹‎ 第二句韓語（中文翻譯）\n📱END\n規則：韓語部分不准出現標點符號；如果韓語部分出現.斷句就換行成新的一條 𖦹‎.𖦹‎。\n\n【社群媒體 HTML 格式】\n除了手機訊息外，IG／Weverse／T
+// --- Modal ---
+function openModal(id){$(id).style.display='flex'}
+function closeModal(id){$(id).style.display='none'}
+window._openModal=openModal;window._closeModal=closeModal;
+
+// --- Markdown ---
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function inlineFormat(t){return esc(t).replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`(.+?)`/g,'<code>$1</code>')}
+function parseTable(lines){
+  var rows=lines.filter(function(l){return!/^\|[\s\-\|:]+\|$/.test(l.trim())}).map(function(l){return l.split('|').filter(function(_,i,a){return i>0&&i<a.length-1}).map(function(c){return c.trim()})});
+  if(!rows.length)return'';
+  var hdr=rows[0],body=rows.slice(1);
+  return'<table><thead><tr>'+hdr.map(function(c){return'<th>'+inlineFormat(c)+'</th>'}).join('')+'</tr></thead><tbody>'+body.map(function(r){return'<tr>'+r.map(function(c){return'<td>'+inlineFormat(c)+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>';
+}
+window.resizeFrame=function(f){try{var h=f.contentDocument.documentElement.scrollHeight;if(h>0)f.style.height=(h+8)+'px'}catch(e){f.style.height='500px'}};
+function parseMarkdown(text){
+  if(!text)return'';
+  var lines=text.split('\n');var out=[];var i=0;
+  while(i<lines.length){
+    var line=lines[i];
+    if(line.trim().startsWith('📲')||line.trim().startsWith('📱MSG')||line.trim().match(/^你收到了.+的訊息/)){
+      var headerMatch=line.match(/你收到了(.+?)的訊息/)||line.match(/📲\s*你收到了(.+?)的訊息/)||line.match(/^你收到了(.+?)的訊息/);
+      var senderName=headerMatch?headerMatch[1]:line.replace(/^📲\s*/,'').replace(/📱MSG/,'').trim();
+      var phoneLines=[];i++;
+      while(i<lines.length&&lines[i].trim()!==''&&!lines[i].trim().startsWith('📱END')&&!lines[i].trim().startsWith('---')){
+        if(lines[i].includes('𖦹')||lines[i].trim().startsWith('𖦹'))phoneLines.push(lines[i]);i++;
+      }
+      if(lines[i]&&lines[i].trim()==='📱END')i++;
+      var msgHtml=phoneLines.map(function(pl){
+        var cleaned=pl.replace(/𖦹[‎.]*𖦹[‎]*/g,'').trim();
+        var transMatch=cleaned.match(/^(.+?)[\s]*[（(]([^）)]+)[）)](.*)$/);
+        var korText,chnText;
+        if(transMatch){korText=transMatch[1].trim();chnText=transMatch[2].trim();}
+        else{korText=cleaned;chnText='';}
+        return'<div class="phone-line"><span class="pi">𖦹‎.𖦹‎</span><span class="pk">'+esc(korText)+'</span>'+(chnText?'<span class="pt">（'+esc(chnText)+'）</span>':'')+'</div>';
+      }).join('');
+      out.push('<div class="phone-wrap"><div class="phone-header">你收到了'+esc(senderName)+'的訊息</div>'+msgHtml+'</div>');
+      continue;
+    }
+    if(line.trim().startsWith('|')&&i+1<lines.length&&/^\|[\s\-\|:]+\|/.test(lines[i+1])){
+      var tl=[];while(i<lines.length&&lines[i].trim().startsWith('|')){tl.push(lines[i]);i++;}
+      out.push(parseTable(tl));continue;
+    }
+    if(line.startsWith('```')){
+      var lang=line.slice(3).trim().toLowerCase();var blockLines=[];i++;
+      while(i<lines.length&&!lines[i].startsWith('```')){blockLines.push(lines[i]);i++;}
+      i++;var content=blockLines.join('\n');
+      if(lang==='html'){
+        try{var blob=new Blob([content],{type:'text/html;charset=utf-8'});var burl=URL.createObjectURL(blob);
+        out.push('<div class="html-frame-wrap"><iframe class="html-frame" src="'+burl+'" onload="setTimeout(()=>resizeFrame(this),200)"></iframe></div>');}
+        catch(e){out.push('<pre><code>'+esc(content)+'</code></pre>');}
+      }else{out.push('<pre><code>'+esc(content)+'</code></pre>');}
+      continue;
+    }
+    if(/^[━─\-=_]{3,}$/.test(line.trim())){out.push('<hr>');i++;continue;}
+    var m;
+    if((m=line.match(/^###\s+(.+)/))){out.push('<h3>'+inlineFormat(m[1])+'</h3>');i++;continue;}
+    if((m=line.match(/^##\s+(.+)/))){out.push('<h2>'+inlineFormat(m[1])+'</h2>');i++;continue;}
+    if((m=line.match(/^#\s+(.+)/))){out.push('<h1>'+inlineFormat(m[1])+'</h1>');i++;continue;}
+    if(line.startsWith('>')){out.push('<blockquote>'+inlineFormat(line.slice(1).trim())+'</blockquote>');i++;continue;}
+    if(/^[\-\*✦•]\s+/.test(line)){out.push('<div class="li">'+inlineFormat(line.replace(/^[\-\*✦•]\s+/,''))+'</div>');i++;continue;}
+    if(!line.trim()){out.push('<div class="sp"></div>');i++;continue;}
+    out.push('<p>'+inlineFormat(line)+'</p>');i++;
+  }
+  return out.join('');
+}
+
+// --- Send btn ---
+function updateSendBtn(){
+  var apiKey=$('api-key').value.trim();
+  var input=$('msg-input').value.trim();
+  var btn=$('send-btn');
+  btn.disabled=loading||!apiKey||!input;
+  btn.style.opacity=btn.disabled?'.35':'1';
+}
+
+function injectReminder(){
+  var ta=$('msg-input');var r=$('reminder-text').value;
+  ta.value=ta.value?ta.value+'\n\n'+r:r;
+  ta.focus();updateSendBtn();
+}
+
+function updateTurnInfo(){
+  var auto=$('auto-reminder').checked;
+  var every=parseInt($('reminder-every').value)||10;
+  var next=Math.ceil((turnCount+1)/every)*every;
+  $('turn-info').textContent='第 '+turnCount+' 輪'+(auto?' · 下次提醒：第 '+next+' 輪':'');
+}
+
+// --- Chat ---
+function appendMessage(msg){
+  var area=$('chat-area');
+  var empty=area.querySelector('.empty');if(empty)empty.remove();
+  var wrap=document.createElement('div');
+  wrap.className='bwrap '+(msg.role==='user'?'user':'dm');
+  wrap.dataset.idx=messages.length-1;
+  var bubble;
+  if(msg.role!=='user'){
+    var avatar=document.createElement('div');avatar.className='dm-avatar';avatar.textContent='DM';
+    wrap.appendChild(avatar);
+    var cw=document.createElement('div');cw.className='dm-content';
+    var lbl=document.createElement('span');lbl.className='role-lbl dm';lbl.textContent='DM';
+    if(msg.isSummary)lbl.textContent+=' 📁';
+    bubble=document.createElement('div');
+    bubble.className='bubble dm'+(msg.isSummary?' summary':'');
+    bubble.innerHTML=parseMarkdown(msg.display||msg.content);
+    cw.appendChild(lbl);cw.appendChild(bubble);wrap.appendChild(cw);
+  }else{
+    var lbl=document.createElement('span');lbl.className='role-lbl user';lbl.textContent='你';
+    bubble=document.createElement('div');bubble.className='bubble user';
+    bubble.innerHTML=parseMarkdown(msg.display||msg.content);
+    wrap.appendChild(lbl);wrap.appendChild(bubble);
+  }
+  area.appendChild(wrap);area.scrollTop=area.scrollHeight;
+  return bubble;
+}
+
+function showLoading(){
+  var area=$('chat-area');
+  var wrap=document.createElement('div');wrap.className='bwrap dm';wrap.id='loading-bubble';
+  var avatar=document.createElement('div');avatar.className='dm-avatar';avatar.textContent='DM';
+  wrap.appendChild(avatar);
+  var cw=document.createElement('div');cw.className='dm-content';
+  var lbl=document.createElement('span');lbl.className='role-lbl dm';lbl.textContent='DM';
+  var bubble=document.createElement('div');bubble.className='bubble dm';
+  bubble.innerHTML='<div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+  cw.appendChild(lbl);cw.appendChild(bubble);wrap.appendChild(cw);
+  area.appendChild(wrap);area.scrollTop=area.scrollHeight;
+}
+function hideLoading(){var el=$('loading-bubble');if(el)el.remove()}
+
+async function sendMessage(){
+  var apiKey=$('api-key').value.trim();
+  var inputEl=$('msg-input');var raw=inputEl.value.trim();
+  if(!raw||loading||!apiKey)return;
+  var content=raw;turnCount++;
+  var auto=$('auto-reminder').checked;
+  var every=parseInt($('reminder-every').value)||10;
+  if(auto&&turnCount%every===0)content+='\n\n'+$('reminder-text').value;
+  var userMsg={role:'user',content:content,display:raw};
+  messages.push(userMsg);appendMessage(userMsg);
+  inputEl.value='';loading=true;updateSendBtn();updateTurnInfo();showLoading();
+  try{
+    var sysPmt=$('system-prompt').value.trim();
+    var model=$('model-select').value;
+    var temp=parseFloat($('temp').value);
+    var maxTok=parseInt($('max-tokens').value);
+    var apiMsgs=[];
+    if(sysPmt)apiMsgs.push({role:'system',content:sysPmt});
+    messages.forEach(function(m){apiMsgs.push({role:m.role,content:m.content})});
+    var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({model:model,messages:apiMsgs,temperature:temp,max_tokens:maxTok})
+    });
+    if(!res.ok){var e=await res.json().catch(function(){return{}});throw new Error(e.error&&e.error.message||'API Error '+res.status)}
+    var data=await res.json();
+    var reply=data.choices[0]&&data.choices[0].message&&data.choices[0].message.content||'';
+    var dmMsg={role:'assistant',content:reply,display:reply};
+    messages.push(dmMsg);hideLoading();appendMessage(dmMsg);saveAll();
+    // Auto-generate forum & IG posts in background
+    autoGenerateSidePosts(apiKey);
+  }catch(e){
+    hideLoading();var area=$('chat-area');
+    var errEl=document.createElement('div');errEl.className='err-box';
+    errEl.textContent='❌ '+e.message;area.appendChild(errEl);area.scrollTop=area.scrollHeight;
+  }finally{loading=false;updateSendBtn()}
+}
+
+function clearChat(){
+  if(!confirm('確定清除所有對話？'))return;
+  messages=[];turnCount=0;forumPosts=[];igPosts=[];
+  $('chat-area').innerHTML='<div class="empty"><div class="empty-icon">💬</div><div class="empty-title">開始你的故事</div><div class="empty-sub">在設定裡貼入 API Key 和 System Prompt</div></div>';
+  renderForumPosts();renderIGPosts();updateTurnInfo();saveAll();
+}
+
+// --- Auto-generate after each turn ---
+async function autoGenerateSidePosts(apiKey){
+  var summary=messages.slice(-6).map(function(m){return(m.role==='user'?'玩家':'DM')+': '+(m.display||m.content).slice(0,200)}).join('\n');
+  // Forum
+  try{
+    var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({model:'deepseek-chat',messages:[
+        {role:'system',content:'你是論壇貼文生成器。根據劇情摘要，生成 1-2 篇 Dcard 風格論壇貼文。繁體中文。回覆純 JSON 陣列：[{"board":"看板","title":"標題","author":"暱稱","content":"內文50-120字","likes":數字,"comments":數字,"time":"幾小時前"}]。不要加其他文字。'},
+        {role:'user',content:'劇情：\n'+summary}
+      ],temperature:0.85,max_tokens:1200})
+    });
+    var data=await res.json();
+    var raw=data.choices[0]&&data.choices[0].message&&data.choices[0].message.content||'[]';
+    raw=raw.replace(/```json\n?/g,'').replace(/```/g,'').trim();
+    var posts=JSON.parse(raw);
+    forumPosts=posts.concat(forumPosts).slice(0,10);
+    renderForumPosts();saveAll();
+  }catch(e){console.warn('Forum auto-gen failed',e)}
+  // IG
+  try{
+    var res2=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({model:'deepseek-chat',messages:[
+        {role:'system',content:'你是 IG 貼文生成器。根據劇情生成 1 則角色 IG 貼文，用完整 HTML（含 inline style），模擬 IG 外觀（頭像圓、用戶名、漸層色塊圖片區 height:280px、愛心留言圖示、caption）。繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"HTML字串"}]。不要加其他文字。'},
+        {role:'user',content:'劇情：\n'+summary}
+      ],temperature:0.85,max_tokens:2000})
+    });
+    var data2=await res2.json();
+    var raw2=data2.choices[0]&&data2.choices[0].message&&data2.choices[0].message.content||'[]';
+    raw2=raw2.replace(/```json\n?/g,'').replace(/```/g,'').trim();
+    var posts2=JSON.parse(raw2);
+    igPosts=posts2.concat(igPosts).slice(0,6);
+    renderIGPosts();saveAll();
+  }catch(e){console.warn('IG auto-gen failed',e)}
+}
+
+// --- Forum ---
+async function generateForumPosts(){
+  var apiKey=$('api-key').value.trim();
+  if(!apiKey){alert('請先填入 API Key');return}
+  if(!messages.length){alert('請先開始對話');return}
+  var btn=$('forum-gen-btn');btn.textContent='生成中…';btn.disabled=true;btn.style.opacity='.5';
+  var summary=messages.slice(-10).map(function(m){return(m.role==='user'?'玩家':'DM')+': '+(m.display||m.content).slice(0,200)}).join('\n');
+  try{
+    var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({model:'deepseek-chat',messages:[
+        {role:'system',content:'你是一個論壇貼文生成器。根據提供的劇情摘要，生成 2-3 篇相關的論壇貼文（如 Dcard/PTT 風格）。用繁體中文。回覆純 JSON 陣列格式：[{"board":"看板名","title":"標題","author":"匿名暱稱","content":"內文(50-150字)","likes":數字,"comments":數字,"time":"幾小時前"}]。不要加任何其他文字。'},
+        {role:'user',content:'劇情摘要：\n'+summary}
+      ],temperature:0.8,max_tokens:2000})
+    });
+    var data=await res.json();
+    var raw=data.choices[0]&&data.choices[0].message&&data.choices[0].message.content||'[]';
+    raw=raw.replace(/```json\n?/g,'').replace(/```/g,'').trim();
+    var posts=JSON.parse(raw);
+    forumPosts=posts.concat(forumPosts).slice(0,10);
+    renderForumPosts();saveAll();
+  }catch(e){alert('生成失敗：'+e.message)}
+  finally{btn.textContent='✨ 根據劇情產生貼文';btn.disabled=false;btn.style.opacity='1'}
+}
+
+function renderForumPosts(){
+  var list=$('forum-list');
+  if(!forumPosts.length){
+    list.innerHTML='<div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有貼文，點上方按鈕根據劇情生成</div>';
+    return;
+  }
+  list.innerHTML=forumPosts.map(function(p){
+    return'<div class="forum-card">'+
+      '<div class="forum-board">'+esc(p.board||'閒聊')+'</div>'+
+      '<div class="forum-title">'+esc(p.title)+'</div>'+
+      '<div class="forum-author">'+esc(p.author||'匿名')+'<span class="forum-time"> · '+(p.time||'剛剛')+'</span></div>'+
+      '<div class="forum-body">'+esc(p.content||'')+'</div>'+
+      '<div class="forum-stats">'+
+        '<span>❤️ '+(p.likes||0)+'</span>'+
+        '<span>💬 '+(p.comments||0)+'</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// --- IG ---
+async function generateIGPosts(){
+  var apiKey=$('api-key').value.trim();
+  if(!apiKey){alert('請先填入 API Key');return}
+  if(!messages.length){alert('請先開始對話');return}
+  var btn=$('ig-gen-btn');btn.textContent='生成中…';btn.disabled=true;btn.style.opacity='.5';
+  var summary=messages.slice(-10).map(function(m){return(m.role==='user'?'玩家':'DM')+': '+(m.display||m.content).slice(0,200)}).join('\n');
+  try{
+    var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({model:'deepseek-chat',messages:[
+        {role:'system',content:'你是一個 Instagram 貼文生成器。根據提供的劇情，生成 2-3 則角色的 IG 貼文。每則貼文用完整 HTML 格式呈現（包含樣式），模擬真實 IG 貼文外觀（頭像、用戶名、圖片區域用色塊代替、愛心/留言圖示、caption）。用繁體中文。回覆純 JSON 陣列：[{"username":"用戶名","html":"完整HTML字串（含<style>和結構）"}]。不要加其他文字。HTML 中圖片區域用漂亮的漸層色塊代替，高度 300px。'},
+        {role:'user',content:'劇情摘要：\n'+summary}
+      ],temperature:0.8,max_tokens:4000})
+    });
+    var data=await res.json();
+    var raw=data.choices[0]&&data.choices[0].message&&data.choices[0].message.content||'[]';
+    raw=raw.replace(/```json\n?/g,'').replace(/```/g,'').trim();
+    var posts=JSON.parse(raw);
+    igPosts=posts.concat(igPosts).slice(0,6);
+    renderIGPosts();saveAll();
+  }catch(e){alert('生成失敗：'+e.message)}
+  finally{btn.textContent='✨ 根據劇情產生 IG 貼文';btn.disabled=false;btn.style.opacity='1'}
+}
+
+function renderIGPosts(){
+  var list=$('ig-list');
+  if(!igPosts.length){
+    list.innerHTML='<div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有 IG 貼文，點上方按鈕根據劇情生成</div>';
+    return;
+  }
+  list.innerHTML=igPosts.map(function(p,idx){
+    try{
+      var blob=new Blob([p.html],{type:'text/html;charset=utf-8'});
+      var url=URL.createObjectURL(blob);
+      return'<div class="ig-card"><iframe class="ig-frame" id="ig-frame-'+idx+'" src="'+url+'" onload="setTimeout(()=>resizeFrame(this),300)"></iframe></div>';
+    }catch(e){
+      return'<div class="ig-card"><div style="padding:16px;color:#999">載入失敗</div></div>';
+    }
+  }).join('');
+}
+
+// --- Compress ---
+function renderCompressList(){
+  selectedSet=new Set();selectHalf();
+  var list=$('compress-list');list.innerHTML='';
+  messages.forEach(function(m,i){
+    var item=document.createElement('div');
+    item.className='c-item'+(selectedSet.has(i)?' sel':'');
+    item.dataset.idx=i;
+    item.onclick=function(){toggleSel(i,item)};
+    item.innerHTML='<div class="cbox'+(selectedSet.has(i)?' on':'')+'" id="cbox-'+i+'">'+(selectedSet.has(i)?'✓':'')+'</div><div class="c-info"><span class="c-role '+(m.role==='user'?'user':'dm')+'">'+(m.role==='user'?'玩家':'DM')+' #'+(i+1)+(m.isSummary?' 📁':'')+'</span><span class="c-preview">'+(m.display||m.content).slice(0,80)+'…</span></div>';
+    list.appendChild(item);
+  });
+  updateSelUI();
+}
+function toggleSel(i,item){
+  if(selectedSet.has(i))selectedSet.delete(i);else selectedSet.add(i);
+  item.classList.toggle('sel',selectedSet.has(i));
+  var box=$('cbox-'+i);
+  if(box){box.className='cbox'+(selectedSet.has(i)?' on':'');box.textContent=selectedSet.has(i)?'✓':''}
+  updateSelUI();
+}
+function selectHalf(){
+  var half=Math.floor(messages.length/2);
+  selectedSet=new Set(Array.from({length:half},function(_,i){return i}));
+  document.querySelectorAll('.c-item').forEach(function(el,i){
+    var on=selectedSet.has(i);el.classList.toggle('sel',on);
+    var box=$('cbox-'+i);if(box){box.className='cbox'+(on?' on':'');box.textContent=on?'✓':''}
+  });updateSelUI();
+}
+function clearSel(){
+  selectedSet=new Set();
+  document.querySelectorAll('.c-item').forEach(function(el){
+    el.classList.remove('sel');var i=el.dataset.idx;
+    var box=$('cbox-'+i);if(box){box.className='cbox';box.textContent=''}
+  });updateSelUI();
+}
+function updateSelUI(){
+  var n=selectedSet.size;$('sel-count').textContent='已選 '+n+' 條';
+  var btn=$('compress-btn');btn.textContent=n?'壓縮選中的 '+n+' 條':'壓縮選中的 0 條';
+  btn.disabled=!n;btn.style.opacity=n?'1':'.4';
+}
+async function compressSelected(){
+  if(!selectedSet.size)return;
+  var apiKey=$('api-key').value.trim();
+  if(!apiKey){alert('請先填入 API Key');return}
+  var btn=$('compress-btn');btn.textContent='壓縮中…';btn.disabled=true;btn.style.opacity='.4';
+  var indices=[].concat(Array.from(selectedSet)).sort(function(a,b){return a-b});
+  var toCompress=indices.map(function(i){return messages[i]});
+  var text=toCompress.map(function(m){return'['+(m.role==='user'?'玩家':'DM')+']: '+m.content}).join('\n\n---\n\n');
+  try{
+    var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({model:'deepseek-chat',messages:[
+        {role:'system',content:'你是劇情摘要助手。將對話壓縮成詳細的繁體中文劇情摘要，保留所有重要情節、人物關係、屬性數值和關鍵對話，讓故事可以無縫繼續。'},
+        {role:'user',content:'請壓縮以下對話：\n\n'+text}
+      ],temperature:0.3,max_tokens:3000})
+    });
+    var data=await res.json();var summary=data.choices[0]&&data.choices[0].message&&data.choices[0].message.content||'';
+    var summaryMsg={role:'user',content:'【📁 劇情摘要（已壓縮 '+indices.length+' 條）】\n\n'+summary+'\n\n請以此摘要為背景繼續故事。',display:'【📁 劇情摘要（已壓縮 '+indices.length+' 條）】\n\n'+summary,isSummary:true};
+    var kept=messages.filter(function(_,i){return!selectedSet.has(i)});
+    var at=Math.min.apply(null,indices);
+    messages=[].concat(kept.slice(0,at),[summaryMsg],kept.slice(at));
+    var area=$('chat-area');area.innerHTML='';
+    messages.forEach(function(m){appendMessage(m)});
+    selectedSet=new Set();saveAll();closeModal('compress-modal');
+  }catch(e){alert('壓縮失敗：'+e.message);updateSelUI()}
+}
+
+// --- Export ---
+function exportChat(){
+  if(!messages.length){alert('目前沒有對話內容');return}
+  var lines=[];
+  lines.push('# 劇情模擬器｜對話記錄');
+  lines.push('匯出時間：'+new Date().toLocaleString('zh-TW'));
+  lines.push('共 '+messages.length+' 條訊息 / 第 '+turnCount+' 輪');
+  lines.push('\n'+'─'.repeat(50)+'\n');
+  messages.forEach(function(m,i){
+    var role=m.role==='user'?'玩家':'DM';
+    var tag=m.isSummary?'（摘要）':'';
+    lines.push('## ['+(i+1)+'] '+role+tag);
+    lines.push(m.display||m.content);
+    lines.push('\n'+'─'.repeat(50)+'\n');
+  });
+  var blob=new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='劇情模擬器_'+new Date().toISOString().slice(0,10)+'.md';
+  a.click();URL.revokeObjectURL(a.href);
+}
+
+// --- Save/Load ---
+var STORAGE_KEY='sim_v2';
+function saveAll(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify({
+    messages:messages,turnCount:turnCount,forumPosts:forumPosts,igPosts:igPosts,
+    apiKey:$('api-key').value,systemPrompt:$('system-prompt').value,
+    reminderText:$('reminder-text').value,model:$('model-select').value,
+    temperature:$('temp').value,maxTokens:$('max-tokens').value,
+    autoReminder:$('auto-reminder').checked,reminderEvery:$('reminder-every').value
+  }))}catch(e){console.warn('save fail',e)}
+}
+function loadAll(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;
+    var d=JSON.parse(raw);
+    if(d.apiKey)$('api-key').value=d.apiKey;
+    if(d.systemPrompt)$('system-prompt').value=d.systemPrompt;
+    if(d.reminderText)$('reminder-text').value=d.reminderText;
+    if(d.model)$('model-select').value=d.model;
+    if(d.temperature){$('temp').value=d.temperature;$('temp-val').textContent=d.temperature}
+    if(d.maxTokens){$('max-tokens').value=d.maxTokens;$('tokens-val').textContent=d.maxTokens}
+    if(d.autoReminder!==undefined)$('auto-reminder').checked=d.autoReminder;
+    if(d.reminderEvery)$('reminder-every').value=d.reminderEvery;
+    if(d.forumPosts)forumPosts=d.forumPosts;
+    if(d.igPosts)igPosts=d.igPosts;
+    if(d.messages&&d.messages.length){
+      messages=d.messages;turnCount=d.turnCount||0;
+      var area=$('chat-area');area.innerHTML='';
+      messages.forEach(function(m){appendMessage(m)});
+    }
+  }catch(e){console.warn('load fail',e)}
+}
+
+// --- Events ---
+$('send-btn').addEventListener('click',sendMessage);
+$('btn-reminder').addEventListener('click',injectReminder);
+$('btn-settings').addEventListener('click',function(){openModal('settings-modal')});
+$('btn-compress').addEventListener('click',function(){openModal('compress-modal');renderCompressList()});
+$('btn-export').addEventListener('click',exportChat);
+$('btn-clear').addEventListener('click',clearChat);
+$('close-settings').addEventListener('click',function(){closeModal('settings-modal')});
+$('close-compress').addEventListener('click',function(){closeModal('compress-modal')});
+$('forum-gen-btn').addEventListener('click',generateForumPosts);
+$('ig-gen-btn').addEventListener('click',generateIGPosts);
+$('btn-select-half').addEventListener('click',selectHalf);
+$('btn-clear-sel').addEventListener('click',clearSel);
+$('compress-btn').addEventListener('click',compressSelected);
+$('temp').addEventListener('input',function(){$('temp-val').textContent=this.value});
+$('max-tokens').addEventListener('input',function(){$('tokens-val').textContent=this.value});
+$('msg-input').addEventListener('input',updateSendBtn);
+$('api-key').addEventListener('input',updateSendBtn);
+$('msg-input').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
+$('auto-reminder').addEventListener('change',function(){updateTurnInfo();saveAll()});
+$('reminder-every').addEventListener('input',function(){updateTurnInfo();saveAll()});
+['api-key','system-prompt','reminder-text','model-select','temp','max-tokens'].forEach(function(id){
+  $(id).addEventListener('change',saveAll);$(id).addEventListener('input',saveAll);
+});
+
+loadAll();renderForumPosts();renderIGPosts();updateTurnInfo();updateSendBtn();
+}
+})();
+
+</script>
+</body>
+</html>
