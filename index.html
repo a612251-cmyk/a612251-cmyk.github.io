@@ -3,67 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<style>:root{color-scheme:light only!important}html,body{background-color:#FFF2D6!important;color:#6B5488!important}@media(prefers-color-scheme:dark){html,body{background-color:#FFF2D6!important;color:#6B5488!important}}</style>
 
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#FFF5E4;color:#4A3560;overflow-x:hidden;-webkit-text-size-adjust:100%}
-a{color:#B07CC8}a:hover{color:#D4A0E8}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#FFF2D6;color:#6B5488;overflow-x:hidden;-webkit-text-size-adjust:100%}
+a{color:#D48CB0}a:hover{color:#E8A8C8}
 ::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-thumb{background:#D4B8E8;border-radius:4px}
+::-webkit-scrollbar-thumb{background:#E8B8D8;border-radius:4px}
 ::-webkit-scrollbar-track{background:transparent}
-.section-divider{height:4px;background:linear-gradient(90deg,#F4D0E8,#D4B8F0,#B8D4F0,#F4D0E8);border-radius:2px;margin:0 16px}
+.section-divider{height:4px;background:linear-gradient(90deg,#FFCCE0,#E0C0F0,#C8E0FF,#FFCCE0);border-radius:2px;margin:0 16px}
 /* Chat bubbles */
 .bwrap{display:flex;flex-direction:column;gap:3px}
 .bwrap.user{align-items:flex-end}
 .bwrap.dm{flex-direction:row;align-items:flex-start;gap:10px}
-.dm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#D4B8F0,#F0C8E0);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#7050A0;border:2px solid #E8D0F4;margin-top:20px}
+.dm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#E0C8F8,#FFD0E8);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#9878C0;border:2px solid #F0D8F0;margin-top:20px}
 .dm-content{display:flex;flex-direction:column;gap:3px;min-width:0}
-.role-lbl{font-size:12px;color:#B8A0C8;padding:0 4px;font-weight:500}
-.role-lbl.user{color:#D07898}
-.role-lbl.dm{color:#8068A8}
-.bubble{padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.7;word-break:break-word;max-width:88%;overflow-x:hidden}
-.bubble.user{background:linear-gradient(135deg,#E8A0C8,#D480B0);color:#fff;border-radius:18px 18px 4px 18px;box-shadow:0 2px 8px rgba(212,128,176,.25)}
-.bubble.dm{background:#fff;border:1.5px solid #E8D8F0;border-radius:18px 18px 18px 4px;box-shadow:0 2px 8px rgba(180,160,210,.12)}
-.bubble.summary{background:#F8F0FF;border-color:#D4B8F0}
-.dots{display:flex;gap:4px;align-items:center;height:20px}
-.dot{width:7px;height:7px;border-radius:50%;background:#C8A0E0;animation:blink 1.2s ease-in-out infinite}
+.role-lbl{font-size:12px;color:#C8A8D8;padding:0 4px;font-weight:500}
+.role-lbl.user{color:#E888B0}
+.role-lbl.dm{color:#A888C8}
+.bubble{padding:10px 14px;border-radius:20px;font-size:14px;line-height:1.7;word-break:break-word;max-width:88%;overflow-x:hidden}
+.bubble.user{background:linear-gradient(135deg,#F8A8D0,#E888B8);color:#fff;border-radius:20px 20px 4px 20px;box-shadow:0 2px 10px rgba(248,168,208,.3)}
+.bubble.dm{background:#fff;border:1.5px solid #F0E0F0;border-radius:20px 20px 20px 4px;box-shadow:0 2px 8px rgba(200,168,220,.1)}
+.bubble.summary{background:#FFF4FF;border-color:#E8C8F0}
+.dots{display:flex;gap:5px;align-items:center;height:20px}
+.dot{width:8px;height:8px;border-radius:50%;background:#F0A8D0;animation:blink 1.2s ease-in-out infinite}
 .dot:nth-child(2){animation-delay:.2s}
 .dot:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
-.err-box{background:#FFF0F0;border:1.5px solid #F0A0A0;border-radius:12px;padding:10px 14px;color:#C04040;font-size:13px}
+.err-box{background:#FFF0F0;border:1.5px solid #F0B0B0;border-radius:14px;padding:10px 14px;color:#D06060;font-size:13px}
 .empty{text-align:center;margin:auto;padding:40px 20px}
-.empty-icon{font-size:40px;margin-bottom:8px}
-.empty-title{font-size:15px;color:#B07CC8;font-weight:600;margin-bottom:4px}
-.empty-sub{font-size:13px;color:#C8B8D8}
+.empty-icon{font-size:44px;margin-bottom:10px}
+.empty-title{font-size:16px;color:#D08CB8;font-weight:700;margin-bottom:4px}
+.empty-sub{font-size:13px;color:#C8B0D0}
 /* Bubble inner */
 .bubble table{width:100%;border-collapse:collapse;margin:6px 0;font-size:12px;display:block;overflow-x:auto}
-.bubble th{background:#F4E8FF;color:#7050A0;padding:5px 8px;text-align:left;border:1px solid #E8D8F0;font-weight:600;white-space:nowrap}
-.bubble td{padding:4px 8px;border:1px solid #F0E4F8;color:#5A4070;font-size:12px}
-.bubble tr:nth-child(even) td{background:#FBF6FF}
-.bubble hr{border:none;border-top:1px solid #E8D8F0;margin:8px 0}
-.bubble h1{color:#9068C0;font-size:15px;margin:8px 0 4px}
-.bubble h2{color:#A070D0;font-size:14px;margin:6px 0 3px}
-.bubble h3{color:#B080D8;font-size:13px;margin:5px 0 2px}
+.bubble th{background:#FFF0F8;color:#9868B0;padding:5px 8px;text-align:left;border:1px solid #F0D8E8;font-weight:600;white-space:nowrap}
+.bubble td{padding:4px 8px;border:1px solid #F8E8F0;color:#7860A0;font-size:12px}
+.bubble tr:nth-child(even) td{background:#FFF8FC}
+.bubble hr{border:none;border-top:1px solid #F0E0F0;margin:8px 0}
+.bubble h1{color:#B878D0;font-size:15px;margin:8px 0 4px}
+.bubble h2{color:#C088D8;font-size:14px;margin:6px 0 3px}
+.bubble h3{color:#D098E0;font-size:13px;margin:5px 0 2px}
 .bubble p{margin:3px 0}
-.bubble strong{color:#6040A0}
-.bubble em{color:#8060B0;font-style:italic}
-.bubble code{background:#F4ECFF;padding:1px 5px;border-radius:4px;font-size:11px;color:#8060B0;font-family:monospace}
-.bubble blockquote{background:#F8F2FF;border-left:3px solid #C8A0E0;padding:6px 10px;margin:5px 0;border-radius:0 8px 8px 0;color:#8878A0;font-size:13px}
+.bubble strong{color:#8860B0}
+.bubble em{color:#A080C0;font-style:italic}
+.bubble code{background:#FFF0F8;padding:1px 5px;border-radius:4px;font-size:11px;color:#B080C8;font-family:monospace}
+.bubble blockquote{background:#FFF4FF;border-left:3px solid #F0A8D0;padding:6px 10px;margin:5px 0;border-radius:0 10px 10px 0;color:#A890C0;font-size:13px}
 .bubble .sp{height:4px}
 .bubble .li{padding:2px 0 2px 4px;color:#5A4070;font-size:13px}
 .bubble pre{background:#F6F0FF;border:1px solid #E8D8F0;border-radius:10px;padding:10px;overflow-x:auto;margin:6px 0}
 .bubble pre code{background:transparent;padding:0;color:#6050A0}
 .bubble .html-frame-wrap{width:100%;margin:8px 0;overflow:hidden}
 .bubble .html-frame{width:100%;border:none;border-radius:12px;display:block;min-height:200px;background:#fff;transition:height .2s}
-.bubble .phone-card,.bubble .phone-wrap{background:#F8F0FF;border:1.5px solid #D4C0E8;border-left:3px solid #C8A0E0;border-radius:14px;padding:12px 14px;margin:10px 0;box-shadow:0 2px 8px rgba(180,140,220,.1)}
-.bubble .phone-card-header,.bubble .phone-header{font-size:11px;color:#A090C0;text-align:center;margin-bottom:8px;font-weight:500}
-.bubble .phone-card-sep{border:none;border-top:1px solid #E8D8F0;margin:6px 0}
+.bubble .phone-card,.bubble .phone-wrap{background:#FFF4F8;border:1.5px solid #F0D0E0;border-left:3px solid #F0A8D0;border-radius:16px;padding:12px 14px;margin:10px 0;box-shadow:0 2px 10px rgba(240,168,208,.12)}
+.bubble .phone-card-header,.bubble .phone-header{font-size:11px;color:#D0A0C0;text-align:center;margin-bottom:8px;font-weight:600}
+.bubble .phone-card-sep{border:none;border-top:1px solid #F0E0F0;margin:6px 0}
 .bubble .phone-line{display:flex;align-items:flex-start;gap:8px;padding:3px 2px;flex-wrap:nowrap}
-.bubble .pi{color:#C8A0E0;font-size:13px;flex-shrink:0;margin-top:2px}
-.bubble .pk{border:1.5px solid #D4C0E8;border-radius:20px;padding:3px 10px;font-size:13px;color:#5A4070;background:#fff;flex-shrink:1;word-break:break-word}
-.bubble .pt{color:#A090C0;font-style:italic;font-size:11px;flex-shrink:0;margin-top:3px;white-space:nowrap}
-.bubble .phone-note{font-size:11px;color:#B0A0C0;padding:2px 0 2px 18px;font-style:italic}
+.bubble .pi{color:#E8A0C8;font-size:13px;flex-shrink:0;margin-top:2px}
+.bubble .pk{border:1.5px solid #F0D0E0;border-radius:20px;padding:3px 10px;font-size:13px;color:#7860A0;background:#fff;flex-shrink:1;word-break:break-word}
+.bubble .pt{color:#C0A0C8;font-style:italic;font-size:11px;flex-shrink:0;margin-top:3px;white-space:nowrap}
+.bubble .phone-note{font-size:11px;color:#C8A8D0;padding:2px 0 2px 18px;font-style:italic}
 .bubble.user table,.bubble.user th,.bubble.user td{color:#fff;border-color:rgba(255,255,255,.25)}
 .bubble.user th{background:rgba(255,255,255,.15)}
 .bubble.user h1,.bubble.user h2,.bubble.user h3,.bubble.user strong{color:#fff}
@@ -73,35 +75,35 @@ a{color:#B07CC8}a:hover{color:#D4A0E8}
 .bubble.user .li{color:#fff}
 .bubble.user tr:nth-child(even) td{background:rgba(255,255,255,.08)}
 /* Forum cards */
-.forum-card{background:#fff;border-radius:14px;padding:14px 16px;border:1.5px solid #E8E0F0;box-shadow:0 2px 10px rgba(180,160,210,.08);transition:transform .15s}
-.forum-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(180,160,210,.15)}
-.forum-board{display:inline-block;background:#F0E4FF;color:#8868C0;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-bottom:6px}
-.forum-title{font-size:15px;font-weight:700;color:#4A3560;margin-bottom:4px}
-.forum-author{font-size:12px;color:#B8A0C8;margin-bottom:8px}
-.forum-time{color:#C8B8D8}
-.forum-body{font-size:13px;line-height:1.6;color:#6A5880;margin-bottom:10px}
-.forum-stats{display:flex;gap:14px;font-size:12px;color:#B8A0C8}
+.forum-card{background:#fff;border-radius:16px;padding:14px 16px;border:1.5px solid #F0E0F0;box-shadow:0 2px 10px rgba(240,180,220,.1);transition:transform .15s}
+.forum-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(240,180,220,.18)}
+.forum-board{display:inline-block;background:#FFE8F4;color:#D080B0;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-bottom:6px}
+.forum-title{font-size:15px;font-weight:700;color:#6B5488;margin-bottom:4px}
+.forum-author{font-size:12px;color:#C8A8D8;margin-bottom:8px}
+.forum-time{color:#D8C0E0}
+.forum-body{font-size:13px;line-height:1.6;color:#8870A0;margin-bottom:10px}
+.forum-stats{display:flex;gap:14px;font-size:12px;color:#D0A8C8}
 /* IG cards */
-.ig-card{background:#fff;border-radius:14px;border:1.5px solid #E8E0F0;overflow:hidden;box-shadow:0 2px 10px rgba(180,160,210,.08)}
+.ig-card{background:#fff;border-radius:16px;border:1.5px solid #F0E0F0;overflow:hidden;box-shadow:0 2px 10px rgba(240,180,220,.1)}
 .ig-frame{width:100%;border:none;display:block;min-height:380px;transition:height .2s}
 /* Compress */
-.c-item{display:flex;gap:10px;padding:8px 12px;border-radius:10px;cursor:pointer;background:#fff;border:1.5px solid #E8E0F0;align-items:flex-start;transition:all .15s}
-.c-item.sel{background:#F4E8FF;border-color:#C8A0E0}
-.cbox{width:18px;height:18px;border-radius:5px;border:2px solid #D4C0E8;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;transition:all .15s}
-.cbox.on{background:#B07CC8;border-color:#C890E0;color:#fff}
+.c-item{display:flex;gap:10px;padding:8px 12px;border-radius:12px;cursor:pointer;background:#fff;border:1.5px solid #F0E0F0;align-items:flex-start;transition:all .15s}
+.c-item.sel{background:#FFF0F8;border-color:#F0A8D0}
+.cbox{width:18px;height:18px;border-radius:6px;border:2px solid #F0C8E0;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;transition:all .15s}
+.cbox.on{background:#F0A0C8;border-color:#F0B8D0;color:#fff}
 .c-info{flex:1;overflow:hidden}
 .c-role{font-size:11px;font-weight:600;display:block;margin-bottom:2px}
-.c-role.user{color:#D07898}
-.c-role.dm{color:#8068A8}
-.c-preview{font-size:12px;color:#B8A0C8;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-role.user{color:#E888B0}
+.c-role.dm{color:#A888C8}
+.c-preview{font-size:12px;color:#C8A8D8;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(74,53,96,.4);backdrop-filter:blur(6px);z-index:100;align-items:center;justify-content:center;padding:16px}
-.modal-box{background:#FFF8F0;border-radius:20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(100,60,140,.2);border:1.5px solid #E8D8F0}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid #F0E4F8;position:sticky;top:0;background:#FFF8F0;border-radius:20px 20px 0 0;z-index:1}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(107,84,136,.35);backdrop-filter:blur(6px);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#FFF8F0;border-radius:22px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(200,140,180,.2);border:1.5px solid #F0E0F0}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid #F8E8F4;position:sticky;top:0;background:#FFF8F0;border-radius:22px 22px 0 0;z-index:1}
 .modal-body{padding:16px 20px}
-.modal-close{width:32px;height:32px;border-radius:50%;background:#F4E8FF;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8868C0}
-.modal-close:hover{background:#E8D0F8}
-input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
+.modal-close{width:32px;height:32px;border-radius:50%;background:#FFE8F4;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#D080B0}
+.modal-close:hover{background:#FFD8EC}
+input[type=range]{width:100%;cursor:pointer;accent-color:#E890B8}
 @media(max-width:480px){
   .bubble{font-size:14px;max-width:92%;line-height:1.7}
   .bubble table{font-size:11px}
@@ -112,25 +114,25 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
 
 </head>
 <body>
-<div style="height:100dvh;display:flex;flex-direction:column;background:#FFF5E4;overflow:hidden">
+<div style="height:100dvh;display:flex;flex-direction:column;background:#FFF2D6;overflow:hidden">
   <!-- ===== HEADER ===== -->
-  <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(135deg,#FFF0E8,#F8E8FF);border-bottom:2px solid #E8D8F0;flex-shrink:0;position:sticky;top:0;z-index:50">
-    <div style="font-size:20px">💜</div>
+  <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(135deg,#FFECD0,#FFE0F0);border-bottom:2px solid #F0D8E8;flex-shrink:0;position:sticky;top:0;z-index:50">
+    <div style="font-size:20px">💗</div>
     <div style="flex:1;min-width:0">
-      <div style="font-size:16px;font-weight:700;color:#6040A0">劇情模擬器</div>
-      <div id="turn-info" style="font-size:11px;color:#B8A0C8">第 0 輪</div>
+      <div style="font-size:16px;font-weight:700;color:#B870A0">劇情模擬器</div>
+      <div id="turn-info" style="font-size:11px;color:#D0A8C8">第 0 輪</div>
     </div>
-    <select id="model-select" style="background:#fff;color:#7050A0;border:1.5px solid #D4C0E8;border-radius:10px;padding:5px 8px;font-size:11px;cursor:pointer;outline:none;font-family:inherit;flex-shrink:0">
+    <select id="model-select" style="background:#fff;color:#A878B8;border:1.5px solid #F0C8E0;border-radius:12px;padding:5px 8px;font-size:11px;cursor:pointer;outline:none;font-family:inherit;flex-shrink:0">
       <option value="deepseek-chat">Chat（推薦）</option>
       <option value="deepseek-v4-flash">V4 Flash</option>
       <option value="deepseek-v4-pro">V4 Pro</option>
       <option value="deepseek-reasoner">Reasoner</option>
     </select>
     <div style="display:flex;gap:4px;flex-shrink:0">
-      <button id="btn-settings" style="background:#fff;border:1.5px solid #D4C0E8;color:#8868C0;border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">⚙️</button>
-      <button id="btn-compress" style="background:#fff;border:1.5px solid #D4C0E8;color:#8868C0;border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">✂️</button>
-      <button id="btn-export" style="background:#fff;border:1.5px solid #D4C0E8;color:#8868C0;border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">💾</button>
-      <button id="btn-clear" style="background:#fff;border:1.5px solid #F0B8B8;color:#D07070;border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">🗑️</button>
+      <button id="btn-settings" style="background:#fff;border:1.5px solid #F0C8E0;color:#D088B0;border-radius:12px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">⚙️</button>
+      <button id="btn-compress" style="background:#fff;border:1.5px solid #F0C8E0;color:#D088B0;border-radius:12px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">✂️</button>
+      <button id="btn-export" style="background:#fff;border:1.5px solid #F0C8E0;color:#D088B0;border-radius:12px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">💾</button>
+      <button id="btn-clear" style="background:#fff;border:1.5px solid #F8C0C0;color:#E08888;border-radius:12px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:500">🗑️</button>
     </div>
   </div>
 
@@ -139,11 +141,11 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
 
     <!-- SECTION 1: CHAT -->
     <div style="padding:10px 12px 16px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#F8E8FF,#FFF0F8);border-radius:14px;border:1.5px solid #E8D0F4">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#FFF0F8,#FFE8F4);border-radius:16px;border:1.5px solid #F8D0E8">
         <span style="font-size:22px">💬</span>
         <div>
-          <div style="font-size:14px;font-weight:700;color:#7050A0">聊天對話</div>
-          <div style="font-size:11px;color:#B8A0C8">與 DM 的即時對話</div>
+          <div style="font-size:14px;font-weight:700;color:#C070A0">聊天對話</div>
+          <div style="font-size:11px;color:#D8A8C8">與 DM 的即時對話</div>
         </div>
       </div>
       <div id="chat-area" style="display:flex;flex-direction:column;gap:10px;min-height:60vh">
@@ -159,13 +161,13 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
 
     <!-- SECTION 2: FORUM -->
     <div style="padding:16px 12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#E8F0FF,#F0E8FF);border-radius:14px;border:1.5px solid #D0D8F4">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#F8E8FF,#FFE8F8);border-radius:16px;border:1.5px solid #E8D0F0">
         <span style="font-size:22px">📋</span>
         <div style="flex:1">
-          <div style="font-size:14px;font-weight:700;color:#5060A0">論壇</div>
-          <div style="font-size:11px;color:#A0B0D0">根據劇情動態產生的貼文</div>
+          <div style="font-size:14px;font-weight:700;color:#A878C0">論壇</div>
+          <div style="font-size:11px;color:#C8A8D8">根據劇情動態產生的貼文</div>
         </div>
-        <button id="forum-gen-btn" style="background:linear-gradient(135deg,#C8A0E0,#A888D0);border:none;color:#fff;border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(168,136,208,.3)">✨ 根據劇情產生貼文</button>
+        <button id="forum-gen-btn" style="background:linear-gradient(135deg,#F0A8D0,#E890C0);border:none;color:#fff;border-radius:12px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(240,168,208,.3)">✨ 根據劇情產生貼文</button>
       </div>
       <div id="forum-list" style="display:flex;flex-direction:column;gap:10px">
         <div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有貼文，點上方按鈕根據劇情生成</div>
@@ -176,13 +178,13 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
 
     <!-- SECTION 3: IG -->
     <div style="padding:16px 12px 24px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#FFE8F0,#F8E0F0);border-radius:14px;border:1.5px solid #F0C8D8">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:linear-gradient(135deg,#FFE0F0,#FFE8F4);border-radius:16px;border:1.5px solid #F8C8E0">
         <span style="font-size:22px">📸</span>
         <div style="flex:1">
-          <div style="font-size:14px;font-weight:700;color:#A06080">Instagram</div>
-          <div style="font-size:11px;color:#D0A0B8">角色的 IG 動態（HTML 嵌入）</div>
+          <div style="font-size:14px;font-weight:700;color:#D080A8">Instagram</div>
+          <div style="font-size:11px;color:#E0A8C0">角色的 IG 動態（HTML 嵌入）</div>
         </div>
-        <button id="ig-gen-btn" style="background:linear-gradient(135deg,#E8A0C0,#D080A8);border:none;color:#fff;border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(208,128,168,.3)">✨ 根據劇情產生 IG 貼文</button>
+        <button id="ig-gen-btn" style="background:linear-gradient(135deg,#F8A8C8,#F090B8);border:none;color:#fff;border-radius:12px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(248,168,200,.3)">✨ 根據劇情產生 IG 貼文</button>
       </div>
       <div id="ig-list" style="display:flex;flex-direction:column;gap:12px">
         <div style="text-align:center;padding:30px;color:#b8a0c8;font-size:13px">還沒有 IG 貼文，點上方按鈕根據劇情生成</div>
@@ -191,13 +193,13 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
   </div>
 
   <!-- ===== FIXED INPUT BAR ===== -->
-  <div style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(255,245,228,0),#FFF5E4 8px);padding:6px 10px;z-index:40;padding-bottom:max(8px,env(safe-area-inset-bottom))">
-    <div style="background:#fff;border:1.5px solid #D4C0E8;border-radius:16px;overflow:hidden;box-shadow:0 -2px 12px rgba(180,160,210,.1)">
-      <textarea id="msg-input" rows="2" placeholder="輸入訊息… (Enter 送出)" style="width:100%;background:transparent;border:none;outline:none;color:#4A3560;padding:10px 14px;resize:none;font-family:inherit;font-size:15px;line-height:1.5;display:block"></textarea>
-      <div style="display:flex;align-items:center;gap:6px;padding:4px 10px 8px;border-top:1px solid #F0E8F8">
-        <button id="btn-reminder" style="background:#F4E8FF;border:1px solid #D4C0E8;color:#8868C0;border-radius:8px;padding:3px 8px;font-size:11px;cursor:pointer;white-space:nowrap;font-weight:500">📋 格式提醒</button>
+  <div style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(255,242,214,0),#FFF2D6 8px);padding:6px 10px;z-index:40;padding-bottom:max(8px,env(safe-area-inset-bottom))">
+    <div style="background:#fff;border:1.5px solid #F0C8E0;border-radius:18px;overflow:hidden;box-shadow:0 -2px 12px rgba(240,180,220,.12)">
+      <textarea id="msg-input" rows="2" placeholder="輸入訊息… (Enter 送出)" style="width:100%;background:transparent;border:none;outline:none;color:#6B5488;padding:10px 14px;resize:none;font-family:inherit;font-size:15px;line-height:1.5;display:block"></textarea>
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 10px 8px;border-top:1px solid #F8E8F4">
+        <button id="btn-reminder" style="background:#FFE8F4;border:1px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:3px 8px;font-size:11px;cursor:pointer;white-space:nowrap;font-weight:500">📋 格式提醒</button>
         <div style="flex:1"></div>
-        <button id="send-btn" disabled style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#C8A0E0,#A080D0);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(168,128,224,.3)">↑</button>
+        <button id="send-btn" disabled style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#F8A8D0,#E890C0);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(248,168,208,.3)">↑</button>
       </div>
     </div>
   </div>
@@ -206,37 +208,37 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
   <div id="settings-modal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-header">
-        <span style="font-size:15px;font-weight:700;color:#6040A0">⚙️ 設定</span>
+        <span style="font-size:15px;font-weight:700;color:#B870A0">⚙️ 設定</span>
         <button id="close-settings" class="modal-close">✕</button>
       </div>
       <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
         <div>
-          <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">DeepSeek API Key</label>
-          <input id="api-key" type="password" placeholder="sk-..." style="width:100%;background:#fff;border:1.5px solid #E0D4F0;color:#4A3560;border-radius:10px;padding:8px 12px;font-size:15px;outline:none;font-family:inherit">
+          <label style="font-size:12px;color:#B890C0;font-weight:500;display:block;margin-bottom:4px">DeepSeek API Key</label>
+          <input id="api-key" type="password" placeholder="sk-..." style="width:100%;background:#fff;border:1.5px solid #F0D8E8;color:#6B5488;border-radius:12px;padding:8px 12px;font-size:15px;outline:none;font-family:inherit">
         </div>
         <div>
-          <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">System Prompt</label>
-          <textarea id="system-prompt" rows="8" placeholder="在此貼入 System Prompt…" style="width:100%;background:#fff;border:1.5px solid #E0D4F0;color:#4A3560;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:80px"></textarea>
+          <label style="font-size:12px;color:#B890C0;font-weight:500;display:block;margin-bottom:4px">System Prompt</label>
+          <textarea id="system-prompt" rows="8" placeholder="在此貼入 System Prompt…" style="width:100%;background:#fff;border:1.5px solid #F0D8E8;color:#6B5488;border-radius:12px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:80px"></textarea>
         </div>
         <div>
-          <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">格式提醒內容</label>
-          <textarea id="reminder-text" rows="5" style="width:100%;background:#fff;border:1.5px solid #E0D4F0;color:#4A3560;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:60px"></textarea>
+          <label style="font-size:12px;color:#B890C0;font-weight:500;display:block;margin-bottom:4px">格式提醒內容</label>
+          <textarea id="reminder-text" rows="5" style="width:100%;background:#fff;border:1.5px solid #F0D8E8;color:#6B5488;border-radius:12px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;resize:vertical;min-height:60px"></textarea>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div>
-            <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">Temperature: <span id="temp-val">0.75</span></label>
+            <label style="font-size:12px;color:#B890C0;font-weight:500;display:block;margin-bottom:4px">Temperature: <span id="temp-val">0.75</span></label>
             <input type="range" id="temp" min="0" max="1.5" step="0.05" value="0.75">
           </div>
           <div>
-            <label style="font-size:12px;color:#8878A0;font-weight:500;display:block;margin-bottom:4px">Max Tokens: <span id="tokens-val">4000</span></label>
+            <label style="font-size:12px;color:#B890C0;font-weight:500;display:block;margin-bottom:4px">Max Tokens: <span id="tokens-val">4000</span></label>
             <input type="range" id="max-tokens" min="500" max="8000" step="100" value="4000">
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <input type="checkbox" id="auto-reminder" checked style="accent-color:#B07CC8">
-          <label style="font-size:12px;color:#8878A0" for="auto-reminder">自動格式提醒（每</label>
-          <input type="number" id="reminder-every" value="10" min="1" max="50" style="width:55px;background:#fff;border:1.5px solid #E0D4F0;color:#4A3560;border-radius:8px;padding:5px 8px;font-size:13px;outline:none;font-family:inherit">
-          <label style="font-size:12px;color:#8878A0">輪）</label>
+          <input type="checkbox" id="auto-reminder" checked style="accent-color:#E890B8">
+          <label style="font-size:12px;color:#B890C0" for="auto-reminder">自動格式提醒（每</label>
+          <input type="number" id="reminder-every" value="10" min="1" max="50" style="width:55px;background:#fff;border:1.5px solid #F0D8E8;color:#6B5488;border-radius:10px;padding:5px 8px;font-size:13px;outline:none;font-family:inherit">
+          <label style="font-size:12px;color:#B890C0">輪）</label>
         </div>
       </div>
     </div>
@@ -246,18 +248,18 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#B07CC8}
   <div id="compress-modal" class="modal-overlay">
     <div class="modal-box" style="max-height:90vh">
       <div class="modal-header">
-        <span style="font-size:15px;font-weight:700;color:#6040A0">✂️ 壓縮對話</span>
+        <span style="font-size:15px;font-weight:700;color:#B870A0">✂️ 壓縮對話</span>
         <button id="close-compress" class="modal-close">✕</button>
       </div>
       <div style="display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid #F0E8F8;flex-wrap:wrap">
-        <span id="sel-count" style="color:#8878A0;font-size:12px;font-weight:500">已選 0 條</span>
+        <span id="sel-count" style="color:#B890C0;font-size:12px;font-weight:500">已選 0 條</span>
         <div style="flex:1"></div>
-        <button id="btn-select-half" style="background:#F4E8FF;border:1px solid #D4C0E8;color:#8868C0;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:500">選前一半</button>
-        <button id="btn-clear-sel" style="background:#F4E8FF;border:1px solid #D4C0E8;color:#8868C0;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:500">清除選擇</button>
+        <button id="btn-select-half" style="background:#FFE8F4;border:1px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:500">選前一半</button>
+        <button id="btn-clear-sel" style="background:#FFE8F4;border:1px solid #F0C8E0;color:#D080B0;border-radius:10px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:500">清除選擇</button>
       </div>
       <div id="compress-list" style="flex:1;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:6px;max-height:50vh;-webkit-overflow-scrolling:touch"></div>
       <div style="padding:12px 16px;border-top:1px solid #F0E8F8">
-        <button id="compress-btn" disabled style="width:100%;background:linear-gradient(135deg,#C8A0E0,#A888D0);border:none;color:#fff;border-radius:12px;padding:12px;font-size:14px;cursor:pointer;font-weight:600;opacity:.4;box-shadow:0 2px 10px rgba(168,136,208,.3)">壓縮選中的 0 條</button>
+        <button id="compress-btn" disabled style="width:100%;background:linear-gradient(135deg,#F8A8D0,#E890C0);border:none;color:#fff;border-radius:14px;padding:12px;font-size:14px;cursor:pointer;font-weight:600;opacity:.4;box-shadow:0 2px 10px rgba(248,168,208,.3)">壓縮選中的 0 條</button>
       </div>
     </div>
   </div>
