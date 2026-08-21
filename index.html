@@ -291,22 +291,28 @@ function parseMarkdown(text){
   while(i<lines.length){
     var line=lines[i];
     if(line.trim().startsWith('📲')||line.trim().startsWith('📱MSG')||line.trim().match(/^你收到了.+的訊息/)){
-      var headerMatch=line.match(/你收到了(.+?)的訊息/)||line.match(/📲\s*你收到了(.+?)的訊息/)||line.match(/^你收到了(.+?)的訊息/);
-      var senderName=headerMatch?headerMatch[1]:line.replace(/^📲\s*/,'').replace(/📱MSG/,'').trim();
+      var hdr=line.replace(/^📲\s*/,'').replace(/📱MSG/,'').trim();
+      var headerMatch=hdr.match(/(?:你|她|他|我)?收到了(.+?)的訊息/);
+      var headerText;
+      if(headerMatch){headerText='你收到了'+headerMatch[1]+'的訊息';}
+      else{headerText=hdr||'收到訊息';}
       var phoneLines=[];i++;
-      while(i<lines.length&&lines[i].trim()!==''&&!lines[i].trim().startsWith('📱END')&&!lines[i].trim().startsWith('---')){
-        if(lines[i].includes('𖦹')||lines[i].trim().startsWith('𖦹'))phoneLines.push(lines[i]);i++;
+      while(i<lines.length){
+        var cl2=lines[i].trim();
+        if(cl2.startsWith('📱END')||cl2.startsWith('📱end')){i++;break;}
+        if(cl2.startsWith('---')||cl2.startsWith('**')||/^[①②③④⑤]/.test(cl2)||cl2.startsWith('【'))break;
+        if(cl2)phoneLines.push(lines[i]);
+        i++;
       }
-      if(lines[i]&&lines[i].trim()==='📱END')i++;
       var msgHtml=phoneLines.map(function(pl){
-        var cleaned=pl.replace(/𖦹[‎.]*𖦹[‎]*/g,'').trim();
+        var cleaned=pl.replace(/[𖦹◎⊙●○☉][‎\s.．·]*[𖦹◎⊙●○☉][‎\s]*/g,'').trim();
         var transMatch=cleaned.match(/^(.+?)[\s]*[（(]([^）)]+)[）)](.*)$/);
         var korText,chnText;
         if(transMatch){korText=transMatch[1].trim();chnText=transMatch[2].trim();}
         else{korText=cleaned;chnText='';}
         return'<div class="phone-line"><span class="pi">𖦹‎.𖦹‎</span><span class="pk">'+esc(korText)+'</span>'+(chnText?'<span class="pt">（'+esc(chnText)+'）</span>':'')+'</div>';
       }).join('');
-      out.push('<div class="phone-wrap"><div class="phone-header">你收到了'+esc(senderName)+'的訊息</div>'+msgHtml+'</div>');
+      out.push('<div class="phone-wrap"><div class="phone-header">'+esc(headerText)+'</div>'+msgHtml+'</div>');
       continue;
     }
     if(line.trim().startsWith('|')&&i+1<lines.length&&/^\|[\s\-\|:]+\|/.test(lines[i+1])){
@@ -434,7 +440,7 @@ async function sendMessage(){
     var temp=parseFloat($('temp').value);
     var maxTok=parseInt($('max-tokens').value);
     var apiMsgs=[];
-    var phoneInstr='\n\n【格式規則】當劇情中出現手機訊息、DM、私訊、KakaoTalk對話時，必須使用以下格式：\n📲 你收到了○○的訊息\n𖦹‎.𖦹‎ 韓語內容（中文翻譯）\n📱END\n每句韓語一行，不加標點。如果有多句用換行分隔。○○替換為角色名。';
+    var phoneInstr='\n\n【格式規則】當劇情中出現手機訊息、DM、私訊、KakaoTalk對話時，必須使用以下格式：\n📲 角色名\n𖦹‎.𖦹‎ 韓語內容（中文翻譯）\n📱END\n📲 後面只寫角色名（如：📲 渽民、📲 楷燦），不要寫「你收到了」。每句韓語一行，不加標點。多句用換行分隔。';
     if(sysPmt)apiMsgs.push({role:'system',content:sysPmt+phoneInstr});
     messages.forEach(function(m){apiMsgs.push({role:m.role,content:m.content})});
     var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
