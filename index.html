@@ -332,7 +332,7 @@ function parseMarkdown(text){
       var emptyCount=0;
       while(i<lines.length){
         var cl=lines[i].trim();
-        if(cl.startsWith('【區塊')||cl.startsWith('━━')||cl.startsWith('| 選項')||cl.startsWith('③'))break;
+        if(cl.startsWith('【區塊')||cl.startsWith('━━')||cl.startsWith('| 選項')||cl.startsWith('③')||/^-{3,}$/.test(cl)||cl.startsWith('📲')||cl.startsWith('📱')||/^\*?\*?[①②③④⑤]/.test(cl))break;
         if(cl===''){emptyCount++;if(emptyCount>2)break;i++;continue;}
         emptyCount=0;
         iLines.push(lines[i]);i++;
@@ -434,7 +434,8 @@ async function sendMessage(){
     var temp=parseFloat($('temp').value);
     var maxTok=parseInt($('max-tokens').value);
     var apiMsgs=[];
-    if(sysPmt)apiMsgs.push({role:'system',content:sysPmt});
+    var phoneInstr='\n\n【格式規則】當劇情中出現手機訊息、DM、私訊、KakaoTalk對話時，必須使用以下格式：\n📲 你收到了○○的訊息\n𖦹‎.𖦹‎ 韓語內容（中文翻譯）\n📱END\n每句韓語一行，不加標點。如果有多句用換行分隔。○○替換為角色名。';
+    if(sysPmt)apiMsgs.push({role:'system',content:sysPmt+phoneInstr});
     messages.forEach(function(m){apiMsgs.push({role:m.role,content:m.content})});
     var res=await fetch('https://api.deepseek.com/v1/chat/completions',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
