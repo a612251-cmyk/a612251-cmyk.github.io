@@ -1,0 +1,1987 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jira Issue Finder · AI</title>
+<style>
+:root {
+  --bg:        #07090F;
+  --surface:   #0D1117;
+  --surface-2: #161B22;
+  --surface-3: #21262D;
+  --border:    #30363D;
+  --border-b:  #484F58;
+  --accent:    #2684FF;
+  --accent-glow: rgba(38,132,255,.15);
+  --ai-accent: #A371F7;
+  --ai-glow:   rgba(163,113,247,.15);
+  --text:      #E6EDF3;
+  --text-2:    #8B949E;
+  --text-3:    #3D444D;
+  --success:   #3FB950;
+  --error:     #F85149;
+  --warning:   #E3B341;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.5}
+
+/* ── App Layout ── */
+.app{display:grid;grid-template-rows:52px auto auto 1fr;height:100vh;overflow:hidden}
+.main{display:grid;grid-template-columns:360px 1fr;overflow:hidden;height:100%}
+
+/* ── Header ── */
+.header{display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid var(--border);background:var(--surface);z-index:10;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.brand-icon{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.badge{font-size:10px;font-weight:700;color:var(--ai-accent);background:var(--ai-glow);border:1px solid rgba(163,113,247,.3);border-radius:4px;padding:2px 7px;letter-spacing:.06em;text-transform:uppercase}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ── API Key Bar ── */
+.keybar{display:flex;align-items:center;gap:10px;padding:9px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.keybar-label{font-size:11.5px;font-weight:600;color:var(--text-2);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.key-dot{width:7px;height:7px;border-radius:50%;background:var(--text-3);flex-shrink:0;transition:background .2s}
+.key-dot.ok{background:var(--success)}
+.keybar input,.keybar select{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12.5px;padding:5px 10px;outline:none;transition:border-color .15s;font-family:monospace}
+.keybar input:focus,.keybar select:focus{border-color:var(--ai-accent)}
+.keybar input::placeholder{color:var(--text-3);font-family:sans-serif}
+.keybar select option{background:var(--surface-3)}
+.keybar-hint{font-size:11px;color:var(--text-3)}
+.keybar-hint a{color:var(--ai-accent);text-decoration:none}
+.keybar-hint a:hover{text-decoration:underline}
+
+/* ── Left Panel ── */
+.left{display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--surface);overflow-y:auto;overflow-x:hidden}
+.section{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.s-label{font-size:10.5px;font-weight:600;color:var(--text-2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.s-label::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--accent)}
+
+/* Config toggle */
+.cfg-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:12px;color:var(--text-2);transition:color .15s}
+.cfg-toggle:hover{color:var(--text)}
+.cfg-toggle .arrow{margin-left:auto;font-size:10px;transition:transform .2s}
+.cfg-toggle.open .arrow{transform:rotate(180deg)}
+.cfg-body{display:none;margin-top:12px}
+.cfg-body.vis{display:block}
+
+label{display:block;font-size:11.5px;color:var(--text-2);font-weight:500;margin-bottom:3px}
+input[type=text],input[type=url],input[type=password],select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;outline:none;transition:border-color .15s;font-family:inherit}
+input[type=text]:focus,input[type=url]:focus,input[type=password]:focus,select:focus{border-color:var(--accent)}
+input::placeholder{color:var(--text-3)}
+.igrp{margin-bottom:10px}
+.ihint{font-size:11px;color:var(--text-3);margin-top:3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Search inputs */
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-2)}
+.search-wrap input{padding-left:32px!important;font-size:14px!important;height:38px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.btn:hover{background:var(--surface-3)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+.btn-primary:hover{background:#388bff;border-color:#388bff}
+.btn-ai{background:linear-gradient(135deg,#4f3b8c,#2c1e5c);border:1px solid rgba(163,113,247,.4);color:#d2b4fe;font-weight:600}
+.btn-ai:hover{background:linear-gradient(135deg,#5e4aa3,#3a2872);border-color:rgba(163,113,247,.7)}
+.btn-ai:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-full{width:100%;justify-content:center}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* JQL bar */
+.jql-bar{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+.jql-tag{font-size:10.5px;font-weight:700;color:var(--text-2);font-family:monospace;letter-spacing:.06em;flex-shrink:0}
+.jql-code{font-family:monospace;font-size:12px;color:#79c0ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jql-code .kw{color:#ff7b72}.jql-code .str{color:#a5d6ff}.jql-code .op{color:var(--text-3)}
+.jql-btns{display:flex;gap:4px;flex-shrink:0}
+
+/* ── Right Panel ── */
+.right{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+
+/* Tabs */
+.tabs{display:flex;align-items:center;border-bottom:1px solid var(--border);background:var(--surface);padding:0 16px;flex-shrink:0}
+.tab{padding:12px 14px;font-size:12.5px;font-weight:500;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;user-select:none;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab.ai-tab.active{color:var(--ai-accent);border-bottom-color:var(--ai-accent)}
+.tab-dot{width:5px;height:5px;border-radius:50%;background:var(--success);opacity:0}
+.tab.has-data .tab-dot{opacity:1}
+.tab-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
+
+.tab-pane{display:none}
+.tab-pane.active{display:flex;flex-direction:column;flex:1;overflow-y:auto;min-height:0}
+
+/* Issue Cards */
+.results-meta{padding:10px 16px;font-size:12.5px;color:var(--text-2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.results-meta strong{color:var(--text)}
+
+.issue-list{padding:12px}
+.issue-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;transition:border-color .15s}
+.issue-card:hover{border-color:var(--border-b)}
+.issue-head{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;align-items:start;padding:12px 14px;cursor:pointer;user-select:none}
+.issue-key{font-family:monospace;font-size:12px;color:var(--accent);font-weight:700;white-space:nowrap;padding-top:1px}
+.issue-summary{font-size:13.5px;font-weight:500;line-height:1.4}
+.issue-meta{margin-top:5px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.issue-status{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;letter-spacing:.03em}
+.st-open,.st-todo{background:#1c2d3f;color:#79c0ff}
+.st-prog{background:#2d2200;color:#e3b341}
+.st-done{background:#132d20;color:#3fb950}
+.type-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px}
+.tb-bug{background:rgba(248,81,73,.15);color:#f85149}
+.tb-task{background:rgba(38,132,255,.15);color:#2684ff}
+.tb-story{background:rgba(63,185,80,.15);color:#3fb950}
+.tb-epic{background:rgba(163,113,247,.15);color:#a371f7}
+.tb-default{background:rgba(139,148,158,.12);color:var(--text-2)}
+.meta-chip{font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:3px}
+.expand-icon{font-size:11px;color:var(--text-3);transition:transform .2s;flex-shrink:0}
+.issue-card.open .expand-icon{transform:rotate(180deg)}
+.issue-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border);margin-top:0}
+.issue-card.open .issue-body{display:block}
+.issue-desc{font-size:12.5px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto;background:var(--bg);border-radius:6px;padding:10px 12px;margin-top:10px;border:1px solid var(--border)}
+.detail-row{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin-top:10px}
+.d-key{font-size:11px;color:var(--text-3);font-weight:600}
+.d-val{font-size:12px;color:var(--text-2)}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px}
+.pg-info{font-size:12px;color:var(--text-2)}
+
+/* ── AI Analysis Panel ── */
+.ai-pane{padding:16px;display:flex;flex-direction:column;flex:1;min-height:0}
+.ai-output{background:var(--surface);border:1px solid rgba(163,113,247,.2);border-radius:8px;padding:16px;min-height:200px;flex:1;overflow-y:auto;font-size:13.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word;position:relative}
+.ai-output.loading::after{content:'▌';animation:blink .7s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.ai-output h1,.ai-output h2,.ai-output h3{margin:14px 0 6px;line-height:1.3}
+.ai-output h1{font-size:16px;color:#d2b4fe}
+.ai-output h2{font-size:14.5px;color:#c8a6ff;border-bottom:1px solid rgba(163,113,247,.2);padding-bottom:5px}
+.ai-output h3{font-size:13.5px;color:#b19ce8}
+.ai-output ul,.ai-output ol{margin:6px 0 6px 20px}
+.ai-output li{margin-bottom:3px}
+.ai-output strong{color:#fff;font-weight:600}
+.ai-output code{background:rgba(163,113,247,.15);color:#d2b4fe;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:12px}
+.ai-output blockquote{border-left:3px solid rgba(163,113,247,.4);margin:8px 0;padding:2px 12px;color:var(--text-2)}
+.ai-prompt-area{margin-bottom:14px}
+.ai-prompt-area textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:13px;line-height:1.6;padding:10px 12px;resize:vertical;outline:none;transition:border-color .15s;min-height:80px}
+.ai-prompt-area textarea:focus{border-color:var(--ai-accent)}
+.ai-prompt-area textarea::placeholder{color:var(--text-3)}
+.ai-controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.ai-count-badge{font-size:12px;color:var(--text-2);background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+
+/* State boxes */
+.state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 24px;text-align:center;color:var(--text-2);height:100%;min-height:300px}
+.state-icon{font-size:40px;margin-bottom:14px;opacity:.5}
+.state-box h3{color:var(--text);font-size:15px;margin-bottom:6px}
+.state-box p{font-size:13px;max-width:380px;line-height:1.6}
+.state-box .state-actions{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
+.cors-box h3{color:var(--warning)}
+.err-box h3{color:var(--error)}
+
+/* Loading spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--text);z-index:999;transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.show{transform:none;opacity:1}
+
+/* Scrollbars */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-b)}
+
+/* Manual import & proxy */
+.or-divider{text-align:center;font-size:11px;color:var(--text-3);margin:4px 0 10px;position:relative;display:flex;align-items:center;gap:8px}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:monospace;font-size:12px;line-height:1.65;padding:8px 10px;resize:vertical;outline:none;transition:border-color .15s}
+textarea:focus{border-color:var(--accent)}
+textarea::placeholder{color:var(--text-3);font-family:sans-serif;font-size:12px}
+.proxy-box{border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.7}
+.proxy-box.blue{background:rgba(38,132,255,.07);border:1px solid rgba(38,132,255,.2)}
+.proxy-box.purple{background:rgba(163,113,247,.07);border:1px solid rgba(163,113,247,.2)}
+.proxy-box h4{font-size:13px;font-weight:600;margin-bottom:7px}
+.proxy-box.blue h4{color:var(--accent)}
+.proxy-box.purple h4{color:var(--ai-accent)}
+.proxy-cmd{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:7px 10px;font-family:monospace;font-size:11px;color:#79c0ff;margin:4px 0 6px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:border-color .15s;line-height:1.5}
+.proxy-cmd:hover{border-color:var(--accent)}
+.proxy-cmd span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+/* Comment bubbles */
+.comments-wrap{margin-top:12px}
+.comments-label{font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.comment-item{background:var(--surface-3);border-radius:6px;padding:9px 12px;margin-bottom:6px}
+.comment-item:last-child{margin-bottom:0}
+.comment-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.comment-author{font-weight:600;color:var(--text);font-size:12px}
+.comment-date{font-size:11px;color:var(--text-3)}
+.comment-body{font-size:12.5px;color:var(--text-2);line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.comments-more{font-size:11.5px;color:var(--text-3);margin-top:6px;text-align:center;padding:4px}
+/* Preset chips */
+.preset-btn{background:var(--surface-3);border:1px solid var(--border);border-radius:20px;color:var(--text-2);font-size:12px;padding:4px 12px;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.preset-btn:hover{border-color:var(--border-b);color:var(--text)}
+.preset-btn.active{background:var(--ai-glow);border-color:rgba(163,113,247,.5);color:var(--ai-accent);font-weight:500}
+/* Export menu */
+.export-wrap{position:relative}
+.export-menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;min-width:180px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.4);overflow:hidden}
+.export-item{padding:9px 14px;font-size:13px;cursor:pointer;color:var(--text);transition:background .12s;white-space:nowrap}
+.export-item:hover{background:var(--surface-3)}
+
+/* ── Knowledge Base ── */
+.kb-section{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.kb-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface-3);border:1px dashed var(--border-b);border-radius:6px;color:var(--text-2);font-size:12px;cursor:pointer;transition:all .15s;width:100%;justify-content:center}
+.kb-upload-btn:hover{background:var(--surface-2);color:var(--text);border-color:var(--accent)}
+.kb-entry-list{margin-top:8px;display:flex;flex-direction:column;gap:4px;max-height:140px;overflow-y:auto}
+.kb-entry{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;font-size:11.5px}
+.kb-entry-icon{flex-shrink:0;font-size:13px}
+.kb-entry-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.kb-entry-chars{font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.kb-entry-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:12px;padding:0 2px;line-height:1;flex-shrink:0}
+.kb-entry-del:hover{color:var(--error)}
+.kb-pane-inner{padding:16px;height:100%;overflow-y:auto}
+.kb-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.kb-card-head{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)}
+.kb-card-head:hover{background:var(--surface-2)}
+.kb-card-title{flex:1;font-size:13px;font-weight:500}
+.kb-card-meta{font-size:11px;color:var(--text-3)}
+.kb-card-body{display:none;padding:12px 14px}
+.kb-card.open .kb-card-body{display:block}
+.kb-card-body pre{font-size:11.5px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 10px}
+.kb-toggle{font-size:10px;color:var(--text-3);transition:transform .2s}
+.kb-card.open .kb-toggle{transform:rotate(180deg)}
+.kb-include-toggle{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12.5px;color:var(--text-2)}
+.kb-include-toggle input[type=checkbox]{accent-color:var(--ai-accent);width:14px;height:14px;cursor:pointer}
+.kb-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;color:var(--text-3);font-size:13px;gap:10px;text-align:center}
+.kb-empty-icon{font-size:36px;opacity:.4}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white" opacity=".9"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    </div>
+    Jira Issue Finder
+  </div>
+  <span class="badge">AI Powered</span>
+  <div class="header-right">
+    <button class="btn btn-sm" id="clearAllBtn">清除</button>
+    <button class="btn btn-sm btn-primary" id="searchBtn">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      搜尋
+    </button>
+  </div>
+</header>
+
+<!-- ── AI API Bar ── -->
+<div class="keybar">
+  <div class="keybar-label">
+    <span class="key-dot" id="keyDot"></span>
+    AI 設定
+  </div>
+  <div class="keybar-label" style="margin-left:4px">URL</div>
+  <input type="text" id="aiUrlInput" placeholder="https://your-api/v1/chat/completions" style="flex:2.5;font-family:monospace" oninput="onUrlInput(this.value)">
+  <div class="keybar-label" style="margin-left:6px">API Key</div>
+  <input type="password" id="aiKeyInput" placeholder="Bearer token（選填）" style="flex:1.2;font-family:monospace" oninput="onKeyInput(this.value)">
+  <div class="keybar-label" style="margin-left:6px">Model</div>
+  <input type="text" id="modelInput" placeholder="模型名稱" style="flex:1;font-family:monospace" oninput="onModelInput(this.value)">
+</div>
+
+<!-- ── JQL Bar ── -->
+<div class="jql-bar">
+  <span class="jql-tag">JQL</span>
+  <div class="jql-code" id="jqlDisplay"><span class="op">— 填入左側欄位以自動生成 JQL —</span></div>
+  <div class="jql-btns">
+    <button class="btn btn-sm" id="copyJqlBtn" title="複製 JQL">複製 JQL</button>
+    <a class="btn btn-sm" id="openJiraBtn" href="#" target="_blank" title="在 Jira 開啟">在 Jira 開啟 ↗</a>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- Left: Config + Search -->
+  <aside class="left">
+    <!-- Connection Config -->
+    <div class="section">
+      <div class="cfg-toggle" id="cfgToggle" onclick="toggleCfg()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 1.42 13.83M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        <span>Jira 連線設定</span>
+        <span id="cfgSummary" style="color:var(--text);font-size:12px;margin-left:4px"></span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="cfg-body vis" id="cfgBody">
+        <div class="igrp">
+          <label>Jira Server URL</label>
+          <input type="url" id="jiraUrl" placeholder="https://your-domain.atlassian.net">
+          <div class="ihint">伺服器網址，不含路徑</div>
+        </div>
+        <div class="grid2">
+          <div class="igrp">
+            <label>帳號 / Email</label>
+            <input type="text" id="jiraUser" placeholder="your@email.com" autocomplete="username">
+          </div>
+          <div class="igrp">
+            <label>API Token / 密碼</label>
+            <input type="password" id="jiraToken" placeholder="••••••" autocomplete="current-password">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Controls -->
+    <div class="section">
+      <div class="s-label">搜尋條件</div>
+      <div class="igrp">
+        <label>專案 Key <span style="color:var(--text-3);font-weight:400">（多個用逗號分隔）</span></label>
+        <input type="text" id="projectKey" placeholder="ABC, DEF, GHI" style="font-family:monospace;font-weight:600;letter-spacing:.04em;font-size:13px;">
+        <div class="ihint">單一專案：<code style="color:var(--text-code)">ABC</code>　多個專案：<code style="color:var(--text-code)">ABC, DEF, GHI</code></div>
+      </div>
+      <div class="igrp">
+        <label>關鍵字</label>
+        <div class="search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="keyword" placeholder="搜尋 Summary、Description、Comments…">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="igrp">
+          <label>狀態</label>
+          <select id="filterStatus">
+            <option value="">全部</option>
+            <option>Open</option>
+            <option>In Progress</option>
+            <option>To Do</option>
+            <option>Done</option>
+            <option>Closed</option>
+            <option>Resolved</option>
+            <option>Reopened</option>
+          </select>
+        </div>
+        <div class="igrp">
+          <label>Issue 類型</label>
+          <select id="filterType">
+            <option value="">全部</option>
+            <option>Bug</option>
+            <option>Task</option>
+            <option>Story</option>
+            <option>Epic</option>
+            <option>Sub-task</option>
+            <option>Improvement</option>
+          </select>
+        </div>
+      </div>
+      <div class="igrp">
+        <label>排序</label>
+        <select id="sortOrder">
+          <option value="updated DESC">最近更新</option>
+          <option value="created DESC">最新建立</option>
+          <option value="created ASC">最早建立</option>
+          <option value="priority DESC">優先度高到低</option>
+          <option value="status ASC">狀態 A→Z</option>
+        </select>
+      </div>
+      <div class="igrp">
+        <label>每頁筆數</label>
+        <select id="pageSize">
+          <option value="20" selected>20 筆</option>
+          <option value="50">50 筆</option>
+          <option value="100">100 筆</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- AI Analyze Button -->
+    <div class="section">
+      <button class="btn btn-full btn-ai" id="aiAnalyzeBtn" onclick="startAiAnalysis()" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" opacity=".8"/></svg>
+        AI 統整分析
+      </button>
+      <div style="font-size:11px;color:var(--text-3);margin-top:6px;text-align:center" id="aiStatus">搜尋後分析規則變更與影響</div>
+    </div>
+
+    <!-- Manual Import (CORS fallback) -->
+    <div class="section" style="flex:0 0 auto">
+      <div class="or-divider">或 手動匯入資料</div>
+      <div style="font-size:11.5px;color:var(--text-2);margin-bottom:8px;line-height:1.6">
+        遇到 CORS 限制時，可從 Jira 匯出 CSV 後貼入，或直接貼上 Issue 清單文字。
+      </div>
+      <div class="igrp">
+        <textarea id="manualData" rows="6" placeholder="支援格式：&#10;① Jira CSV 匯出（含 Issue Key、Summary 欄）&#10;② KEY-123: 摘要文字（每行一筆）&#10;③ 任意文字（AI 將直接分析原文）"></textarea>
+      </div>
+      <button class="btn btn-full" style="font-size:13px" onclick="parseManualData()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        解析並載入
+      </button>
+      <div id="parseStatus" style="font-size:11.5px;margin-top:6px;text-align:center;min-height:16px"></div>
+    </div>
+    <!-- Knowledge Base Upload -->
+    <div class="kb-section">
+      <div class="s-label" style="margin-bottom:8px">📚 知識庫 <span id="kbCountBadge" style="margin-left:auto;font-size:10px;color:var(--text-3)"></span></div>
+      <label class="kb-upload-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        上傳 PDF / TXT / MD
+        <input type="file" id="kbFileInput" accept=".pdf,.txt,.md" multiple hidden onchange="handleKbUpload(event)">
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11.5px;color:var(--text-2);cursor:pointer">
+        <input type="checkbox" id="kbDoneOnly" checked style="accent-color:var(--success);width:13px;height:13px">
+        只擷取已完成項目
+      </label>
+      <div class="kb-entry-list" id="kbEntryList"></div>
+    </div>
+  </aside>
+
+  <!-- Right: Results + AI -->
+  <div class="right">
+    <div class="tabs">
+      <div class="tab active" id="tab-results" onclick="switchTab('results')">
+        📋 搜尋結果 <span class="tab-dot" id="dot-results"></span>
+      </div>
+      <div class="tab ai-tab" id="tab-ai" onclick="switchTab('ai')">
+        ✨ AI 統整分析 <span class="tab-dot" id="dot-ai"></span>
+      </div>
+      <div class="tab" id="tab-kb" onclick="switchTab('kb')">
+        📚 知識庫 <span class="tab-dot" id="dot-kb"></span>
+      </div>
+      <div class="tab-actions">
+        <button class="btn btn-sm" id="copyAiBtn" style="display:none" onclick="copyAiOutput()">複製分析</button>
+        <div class="export-wrap" id="exportWrap" style="display:none;position:relative">
+          <button class="btn btn-sm" onclick="toggleExportMenu()" id="exportBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            匯出文件 ▾
+          </button>
+          <div class="export-menu" id="exportMenu" style="display:none">
+            <div class="export-item" onclick="doExport('md')">📄 Markdown (.md)</div>
+            <div class="export-item" onclick="doExport('html')">🌐 HTML 文件 (.html)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Tab -->
+    <div class="tab-pane active" id="pane-results">
+      <div class="state-box">
+        <div class="state-icon">🔍</div>
+        <h3>輸入搜尋條件開始查詢</h3>
+        <p>填入 Jira URL、專案 Key 及關鍵字，點擊右上角「搜尋」按鈕。</p>
+      </div>
+    </div>
+
+    <!-- AI Tab -->
+    <div class="tab-pane" id="pane-ai">
+      <div class="ai-pane">
+        <!-- My current change -->
+        <div style="margin-bottom:14px">
+          <label style="margin-bottom:6px;font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px">
+            <span style="background:var(--ai-accent);border-radius:4px;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">✏</span>
+            我目前在調整什麼？
+          </label>
+          <textarea id="myChange" rows="4" placeholder="描述你這次要改動的內容，越具體越好。例如：&#10;&#10;- 調整訂單折扣計算邏輯，把折扣上限從 30% 改成 20%&#10;- 修改審核流程，加入主管二次確認步驟&#10;- 把付款狀態的判斷條件從 OR 改成 AND&#10;&#10;AI 會根據你的描述，從 Jira 需求單中找出可能衝突的規則。" style="border-color:rgba(163,113,247,.3)"></textarea>
+        </div>
+
+        <div class="ai-prompt-area">
+          <label style="margin-bottom:8px;font-size:12px;color:var(--text-2);display:block">分析模式（點擊套用，或在下方自訂）</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            <button class="preset-btn active" data-preset="impact" onclick="applyPreset(this)">⚡ 影響評估</button>
+            <button class="preset-btn" data-preset="rules" onclick="applyPreset(this)">📋 規則變更盤點</button>
+            <button class="preset-btn" data-preset="bizlogic" onclick="applyPreset(this)">🏢 商業邏輯分析</button>
+            <button class="preset-btn" data-preset="testcases" onclick="applyPreset(this)">🧪 測試情境</button>
+            <button class="preset-btn" data-preset="risk" onclick="applyPreset(this)">⚠️ 風險與依賴</button>
+            <button class="preset-btn" data-preset="custom" onclick="applyPreset(this)">✏️ 自訂</button>
+          </div>
+          <textarea id="aiPromptCustom" rows="4" placeholder="留空使用上方選擇的模式…"></textarea>
+        </div>
+        <div class="ai-controls">
+          <span class="ai-count-badge" id="aiCountBadge">尚未搜尋</span>
+          <button class="btn btn-ai" id="aiRunBtn" onclick="startAiAnalysis()" disabled>
+            <span class="spinner" style="display:none" id="aiSpinner"></span>
+            <svg id="aiIcon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+            開始分析
+          </button>
+          <button class="btn btn-sm" id="stopAiBtn" style="display:none" onclick="stopAi()">停止</button>
+        </div>
+        <div class="ai-output" id="aiOutput">
+          <span style="color:var(--text-3)">分析結果將顯示在這裡。請先完成搜尋，並在頂部填入 AI API URL，然後點擊「開始分析」。</span>
+        </div>
+      </div>
+    </div>
+    <!-- Knowledge Base Tab -->
+    <div class="tab-pane" id="pane-kb">
+      <div class="kb-pane-inner">
+        <div class="kb-include-toggle">
+          <input type="checkbox" id="kbIncludeInAi" checked>
+          <label for="kbIncludeInAi" style="cursor:pointer">AI 分析時一同參考知識庫內容</label>
+        </div>
+        <div id="kbCardList">
+          <div class="kb-empty"><div class="kb-empty-icon">📂</div><div>尚無知識庫內容<br><span style="font-size:11px">點左側「上傳 PDF / TXT」匯入處理紀錄</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .main -->
+</div><!-- .app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+let currentIssues = [];
+let currentPage   = 0;
+let currentTotal  = 0;
+let aiController  = null;
+let aiModel       = '';
+let aiKey         = '';
+let aiUrl         = '';
+let aiRunning     = false;
+let rawAiText     = '';
+
+const $ = id => document.getElementById(id);
+
+// ── AI Config ──
+function onUrlInput(v) {
+  aiUrl = v.trim();
+  updateKeyDot();
+  saveAiSettings();
+}
+function onKeyInput(v) {
+  aiKey = v.trim();
+  updateKeyDot();
+  saveAiSettings();
+}
+function onModelInput(v) {
+  aiModel = v.trim();
+  saveAiSettings();
+}
+function updateKeyDot() {
+  const ok = !!aiUrl;
+  $('keyDot').className = 'key-dot' + (ok ? ' ok' : '');
+}
+function saveAiSettings() {
+  try { localStorage.setItem('jifa_ai', JSON.stringify({ aiUrl, aiModel })); } catch(e){}
+}
+function loadAiSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('jifa_ai') || '{}');
+    if (s.aiUrl)   { $('aiUrlInput').value  = s.aiUrl;   aiUrl   = s.aiUrl; }
+    if (s.aiModel) { $('modelInput').value  = s.aiModel; aiModel = s.aiModel; }
+    updateKeyDot();
+  } catch(e){}
+}
+
+// ── Config Toggle ──
+function toggleCfg() {
+  const body = $('cfgBody');
+  const toggle = $('cfgToggle');
+  const vis = body.classList.toggle('vis');
+  toggle.classList.toggle('open', vis);
+  updateCfgSummary();
+}
+function updateCfgSummary() {
+  const url  = $('jiraUrl').value.trim();
+  const body = $('cfgBody');
+  $('cfgSummary').textContent = (!body.classList.contains('vis') && url)
+    ? '· ' + url.replace(/https?:\/\//,'').replace(/\/$/,'')
+    : '';
+}
+
+// ── JQL ──
+function buildJQL() {
+  const rawProj = $('projectKey').value.trim().toUpperCase();
+  const kw   = $('keyword').value.trim();
+  const st   = $('filterStatus').value;
+  const tp   = $('filterType').value;
+  const ord  = $('sortOrder').value;
+
+  // Parse multiple project keys (comma or space separated)
+  const projKeys = rawProj
+    .split(/[,\s]+/)
+    .map(p => p.trim())
+    .filter(Boolean);
+
+  const parts = [];
+  if (projKeys.length === 1) {
+    parts.push(`project = "${projKeys[0]}"`);
+  } else if (projKeys.length > 1) {
+    parts.push(`project IN (${projKeys.map(k => `"${k}"`).join(', ')})`);
+  }
+  if (kw) parts.push(`text ~ "${kw}"`);
+  if (st) parts.push(`status = "${st}"`);
+  if (tp) parts.push(`issuetype = "${tp}"`);
+  return parts.length ? parts.join(' AND ') + ` ORDER BY ${ord}` : '';
+}
+
+function renderJQL() {
+  const jql = buildJQL();
+  const disp = $('jqlDisplay');
+  if (!jql) {
+    disp.innerHTML = '<span class="op">— 填入左側欄位以自動生成 JQL —</span>';
+    $('openJiraBtn').href = '#';
+    return;
+  }
+  disp.innerHTML = jql
+    .replace(/\b(project|text|status|issuetype|ORDER BY|AND|OR|NOT)\b/g,'<span class="kw">$1</span>')
+    .replace(/"([^"]*)"/g,'"<span class="str">$1</span>"');
+  const base = $('jiraUrl').value.replace(/\/$/,'');
+  if (base) $('openJiraBtn').href = `${base}/issues/?jql=${encodeURIComponent(jql)}`;
+}
+
+['projectKey','keyword','filterStatus','filterType','sortOrder','jiraUrl'].forEach(id => {
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener('input', renderJQL);
+  el.addEventListener('change', renderJQL);
+});
+$('projectKey').addEventListener('input', e => {
+  // Uppercase only alpha-numeric chars, keep commas/spaces as-is
+  const pos = e.target.selectionStart;
+  e.target.value = e.target.value.toUpperCase();
+  e.target.setSelectionRange(pos, pos);
+});
+$('keyword').addEventListener('keydown', e => { if (e.key==='Enter') doSearch(0); });
+
+// ── Search ──
+async function doSearch(page = 0) {
+  const jiraUrl  = $('jiraUrl').value.trim().replace(/\/$/,'');
+  const username = $('jiraUser').value.trim();
+  const token    = $('jiraToken').value.trim();
+  const jql      = buildJQL();
+  const pgSize   = parseInt($('pageSize').value) || 20;
+
+  if (!jiraUrl) { showToast('⚠ 請填入 Jira Server URL'); openCfg(); return; }
+  const projKeys = $('projectKey').value.trim().split(/[,\s]+/).filter(Boolean);
+  if (!projKeys.length) { showToast('⚠ 請填入至少一個專案 Key'); return; }
+
+  currentPage = page;
+  switchTab('results');
+  $('pane-results').innerHTML = `<div class="state-box"><div class="spinner" style="width:28px;height:28px;border-width:3px;margin-bottom:12px"></div><p>搜尋中…</p></div>`;
+
+  const params = new URLSearchParams({
+    jql, startAt: page * pgSize, maxResults: pgSize,
+    fields: 'summary,status,issuetype,assignee,created,updated,priority,description,labels,components,comment'
+  });
+
+  // First try: with credentials (if provided)
+  const hasAuth = username && token;
+  const authHeaders = {
+    'Content-Type': 'application/json',
+    ...(hasAuth ? { 'Authorization': 'Basic ' + btoa(`${username}:${token}`) } : {})
+  };
+
+  try {
+    const res = await fetch(`${jiraUrl}/rest/api/2/search?${params}`, { headers: authHeaders });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      if (res.status === 401) { renderAuth401(jiraUrl); return; }
+      if (res.status === 403) { renderError('權限不足（403）：你的帳號可能沒有瀏覽此專案的權限。'); return; }
+      renderError((err.errorMessages||[]).join('; ') || `HTTP ${res.status}`); return;
+    }
+    const data = await res.json();
+    currentIssues = data.issues || [];
+    currentTotal  = data.total  || 0;
+    renderResults(data, jiraUrl, page, pgSize);
+    updateAiReady();
+    saveSettings();
+  } catch(e) {
+    // CORS error (TypeError: Failed to fetch)
+    // Detect: if user provided credentials, the Auth header likely caused preflight to fail
+    const reason = hasAuth ? 'auth-header' : 'cors';
+    renderCors(jql, jiraUrl, reason);
+  }
+}
+
+// Fallback: try same search without Authorization header (rely on browser session)
+async function doSearchNoAuth(jql) {
+  const jiraUrl = $('jiraUrl').value.trim().replace(/\/$/,'');
+  const pgSize  = parseInt($('pageSize').value) || 20;
+  $('pane-results').innerHTML = `<div class="state-box"><div class="spinner" style="width:28px;height:28px;border-width:3px;margin-bottom:12px"></div><p>嘗試不帶憑證請求…</p></div>`;
+  const params = new URLSearchParams({
+    jql, startAt: 0, maxResults: pgSize,
+    fields: 'summary,status,issuetype,assignee,created,updated,priority,description,labels,components,comment'
+  });
+  try {
+    const res = await fetch(`${jiraUrl}/rest/api/2/search?${params}`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (res.status === 401) {
+      showToast('⚠ 需要登入憑證，此方式無效');
+      renderCors(jql, jiraUrl, 'auth-header'); return;
+    }
+    if (!res.ok) {
+      renderError(`HTTP ${res.status}`); return;
+    }
+    const data = await res.json();
+    currentIssues = data.issues || [];
+    currentTotal  = data.total  || 0;
+    renderResults(data, jiraUrl, 0, pgSize);
+    updateAiReady();
+    showToast('✓ 以瀏覽器 Session 登入成功');
+  } catch(e) {
+    renderCors(jql, jiraUrl, 'cors');
+    showToast('⚠ 不帶憑證也被封鎖，請改伺服器設定或用 CSV 匯入');
+  }
+}
+
+function openCfg() {
+  $('cfgBody').classList.add('vis');
+  $('cfgToggle').classList.remove('open');
+}
+
+// ── Render Results ──
+function renderResults(data, jiraUrl, page, pgSize) {
+  if (!data.issues || !data.issues.length) {
+    $('pane-results').innerHTML = `
+      <div class="state-box">
+        <div class="state-icon">🕳️</div>
+        <h3>找不到符合的 Issue</h3>
+        <p>嘗試換個關鍵字，或移除部分篩選條件。</p>
+      </div>`;
+    $('dot-results').style.opacity = '0';
+    return;
+  }
+
+  const start  = data.startAt + 1;
+  const end    = data.startAt + data.issues.length;
+  const totPg  = Math.ceil(data.total / pgSize);
+
+  let html = `<div class="results-meta"><span>顯示 <strong>${start}–${end}</strong> / 共 <strong>${data.total}</strong> 筆</span></div>
+  <div class="issue-list">`;
+
+  data.issues.forEach((issue, idx) => {
+    const f    = issue.fields;
+    const key  = issue.key;
+    const link = `${jiraUrl}/browse/${key}`;
+    const summ = f.summary || '(無標題)';
+    const stat = f.status?.name || '';
+    const type = f.issuetype?.name || '';
+    const asgn = f.assignee?.displayName || '—';
+    const upd  = (f.updated||'').substring(0,10);
+    const crt  = (f.created||'').substring(0,10);
+    const desc = f.description || '';
+    const prio = f.priority?.name || '';
+    const lbls = (f.labels||[]).join(', ');
+    const comp = (f.components||[]).map(c=>c.name).join(', ');
+
+    const stCls = statusCls(stat);
+    const tyCls = typeCls(type);
+
+    html += `
+    <div class="issue-card" id="card-${idx}">
+      <div class="issue-head" onclick="toggleCard(${idx})">
+        <div class="issue-key">${key}</div>
+        <div>
+          <div class="issue-summary">${escHtml(summ)}</div>
+          <div class="issue-meta">
+            <span class="type-badge ${tyCls}">${escHtml(type)}</span>
+            <span class="issue-status ${stCls}">${escHtml(stat)}</span>
+            <span class="meta-chip">👤 ${escHtml(asgn)}</span>
+            ${upd ? `<span class="meta-chip">🕐 ${upd}</span>` : ''}
+            ${prio ? `<span class="meta-chip">⚡ ${escHtml(prio)}</span>` : ''}
+            ${(f.comment?.total > 0) ? `<span class="meta-chip">💬 ${f.comment.total}</span>` : ''}
+          </div>
+        </div>
+        <span class="expand-icon">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="detail-row">
+          <span class="d-key">Key</span><span class="d-val"><a href="${link}" target="_blank" style="color:var(--accent)">${key}</a></span>
+          <span class="d-key">建立</span><span class="d-val">${crt}</span>
+          <span class="d-key">更新</span><span class="d-val">${upd}</span>
+          ${comp ? `<span class="d-key">元件</span><span class="d-val">${escHtml(comp)}</span>` : ''}
+          ${lbls ? `<span class="d-key">標籤</span><span class="d-val">${escHtml(lbls)}</span>` : ''}
+        </div>
+        ${desc ? `<div class="issue-desc">${escHtml(desc.substring(0,800))}${desc.length>800?'\n…（內容過長已截斷）':''}</div>` : '<div style="font-size:12px;color:var(--text-3);margin-top:8px">（無描述）</div>'}
+        ${renderComments(f.comment)}
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+
+  // Pagination
+  if (totPg > 1) {
+    html += `<div class="pagination">`;
+    if (page > 0) html += `<button class="btn btn-sm" onclick="doSearch(${page-1})">← 上一頁</button>`;
+    html += `<span class="pg-info">第 ${page+1} / ${totPg} 頁</span>`;
+    if (page < totPg-1) html += `<button class="btn btn-sm" onclick="doSearch(${page+1})">下一頁 →</button>`;
+    html += `</div>`;
+  }
+
+  $('pane-results').innerHTML = html;
+  $('dot-results').style.opacity = '1';
+}
+
+function toggleCard(idx) {
+  const card = $(`card-${idx}`);
+  if (card) card.classList.toggle('open');
+}
+
+// ── Bookmarklet builder ──
+function buildBookmarklet(base, defaultJql) {
+  const safeJql = (defaultJql || '').replace(/`/g, '\\`').replace(/\\/g, '\\\\');
+  const code = `(function(){
+var jql=prompt('JQL（空白=抓目前頁 URL 的 JQL）','${safeJql}');
+if(jql===null)return;
+if(!jql){var m=location.search.match(/[?&]jql=([^&]*)/);jql=m?decodeURIComponent(m[1]):'';}
+if(!jql){alert('⚠ 請輸入 JQL');return;}
+fetch('/rest/api/2/search?'+new URLSearchParams({jql,maxResults:100,fields:'summary,status,issuetype,assignee,priority,description,labels,comment'}),{credentials:'include'})
+.then(function(r){return r.json();})
+.then(function(d){
+  if(!d.issues){alert('⚠ 回應格式不符：'+JSON.stringify(d).slice(0,200));return;}
+  var lines=d.issues.map(function(i){
+    var f=i.fields;
+    var desc='';
+    if(f.description){
+      if(typeof f.description==='string')desc=f.description;
+      else if(f.description.content)desc=f.description.content.map(function(b){return(b.content||[]).map(function(c){return c.text||'';}).join('');}).join('\\n');
+    }
+    var comments=(f.comment&&f.comment.comments||[]).slice(0,5).map(function(c){
+      var body='';
+      if(typeof c.body==='string')body=c.body;
+      else if(c.body&&c.body.content)body=c.body.content.map(function(b){return(b.content||[]).map(function(x){return x.text||'';}).join('');}).join('\\n');
+      return (c.author&&(c.author.displayName||c.author.name)||'?')+': '+body.slice(0,300);
+    });
+    return i.key+': '+f.summary+'\\n  狀態: '+(f.status&&f.status.name||'')+'  類型: '+(f.issuetype&&f.issuetype.name||'')+'  指派: '+(f.assignee&&f.assignee.displayName||'未指派')+(desc?'\\n  描述: '+desc.slice(0,400):'')+(comments.length?'\\n  留言:\\n  '+comments.join('\\n  '):'');
+  });
+  var text='// Jira 抓取 '+d.issues.length+'/'+d.total+' 筆 JQL: '+jql+'\\n'+lines.join('\\n\\n');
+  navigator.clipboard.writeText(text).then(function(){alert('✓ 已複製 '+d.issues.length+' 筆 Issue，請回工具貼到「手動匯入」');}).catch(function(){prompt('複製以下內容：',text);});
+}).catch(function(e){alert('⚠ 抓取失敗：'+e.message);});
+})();`;
+  return 'javascript:' + encodeURIComponent(code);
+}
+
+// ── CORS / Error states ──
+function renderCors(jql, base, reason) {
+  const navLink = base ? `${base}/issues/?jql=${encodeURIComponent(jql)}` : '#';
+  const isAuthHeaderIssue = reason === 'auth-header';
+  $('pane-results').innerHTML = `
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+
+      <div style="background:rgba(227,179,65,.07);border:1px solid rgba(227,179,65,.3);border-radius:10px;padding:16px 18px">
+        <div style="font-size:14px;font-weight:600;color:var(--warning);margin-bottom:8px">🔒 CORS 仍被封鎖</div>
+        ${isAuthHeaderIssue ? `
+        <div style="font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:10px">
+          已偵測到伺服器有回傳 <code style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:3px;color:#79c0ff">Access-Control-Allow-Origin: *</code>，
+          但瀏覽器帶著 <code style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:3px;color:#ff7b72">Authorization</code> header 時會發 OPTIONS 預檢請求，
+          伺服器還需要額外允許這個 header 才行。
+        </div>
+        ` : `
+        <div style="font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:10px">
+          瀏覽器安全政策封鎖了跨網域的 API 請求。
+        </div>
+        `}
+        <a href="${navLink}" target="_blank" class="btn btn-sm">先在 Jira 查看結果 ↗</a>
+        &nbsp;
+        <button class="btn btn-sm" onclick="doSearchNoAuth(${JSON.stringify(jql)})">嘗試不帶憑證請求</button>
+      </div>
+
+      ${isAuthHeaderIssue ? `
+      <!-- Root cause + server fix -->
+      <div class="proxy-box blue">
+        <h4>✅ 解法一：讓伺服器允許 Authorization header（最乾淨）</h4>
+        <div style="color:var(--text-2);margin-bottom:10px;line-height:1.7">
+          在你的 Jira 前端代理（Nginx / Apache / IIS）加上以下回應 Header：
+        </div>
+        <div class="proxy-cmd" onclick="copyText('Access-Control-Allow-Headers: Authorization, Content-Type, X-Atlassian-Token\nAccess-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS\nAccess-Control-Allow-Origin: *')">
+          <span>Access-Control-Allow-Headers: Authorization, Content-Type, X-Atlassian-Token</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </div>
+        <div style="font-size:11.5px;color:var(--text-2);line-height:1.8;margin-top:6px">
+          <strong style="color:var(--text)">Nginx 範例</strong>（加在 <code style="color:#79c0ff">location /</code> 區塊）：<br>
+          <div class="proxy-cmd" style="margin-top:4px;cursor:text;flex-direction:column;align-items:flex-start;gap:2px">
+            <span>add_header 'Access-Control-Allow-Origin' '*';</span>
+            <span>add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Atlassian-Token';</span>
+            <span>add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';</span>
+            <span>if ($request_method = OPTIONS) { return 204; }</span>
+          </div>
+        </div>
+      </div>` : ''}
+
+      <!-- Local proxy -->
+      <div class="proxy-box blue">
+        <h4>🛠 解法${isAuthHeaderIssue ? '二' : '一'}：本機 Proxy（一行指令，不需改伺服器）</h4>
+        <div style="color:var(--text-2);margin-bottom:8px">執行後把上方 Jira URL 改成 <code style="background:rgba(38,132,255,.15);color:#79c0ff;padding:1px 5px;border-radius:3px">http://localhost:8010/proxy</code></div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:3px">▸ Node.js</div>
+        <div class="proxy-cmd" onclick="copyText('npx local-cors-proxy --proxyUrl ${base} --port 8010 --credentials')">
+          <span>npx local-cors-proxy --proxyUrl ${base} --port 8010 --credentials</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </div>
+      </div>
+
+      <!-- Bookmarklet -->
+      <div class="proxy-box purple">
+        <h4>🔖 解法${isAuthHeaderIssue ? '三' : '二'}：Bookmarklet（最快，不需改任何設定）</h4>
+        <div style="color:var(--text-2);line-height:1.8;margin-bottom:10px">
+          把下方按鈕拖曳到書籤列 → 在 Jira 頁面點一下 → 自動抓取 Issue 並複製到剪貼簿 → 回這裡貼到「手動匯入」
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+          <a id="bookmarkletLink" href="${buildBookmarklet(base,buildJQL())}" class="btn btn-sm btn-ai" style="cursor:grab;user-select:none" title="拖曳到書籤列">
+            🔖 拖到書籤列
+          </a>
+          <span style="font-size:11.5px;color:var(--text-3)">← 長按或直接拖曳到瀏覽器書籤列</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--text-3);line-height:1.8">
+          ① 拖曳書籤 → ② 開啟你的 Jira 頁面 → ③ 點書籤 → ④ 輸入 JQL 或直接按確定 → ⑤ 回這裡點「手動匯入」→ 貼上
+        </div>
+      </div>
+
+      <!-- Manual CSV -->
+      <div class="proxy-box blue">
+        <h4>📋 解法${isAuthHeaderIssue ? '四' : '三'}：手動貼入 CSV</h4>
+        <div style="color:var(--text-2)">Jira 右上角 → 匯出 → CSV → 貼到左側「手動匯入」→ AI 統整分析</div>
+      </div>
+    </div>`;
+}
+function renderAuth401(jiraUrl) {
+  const isCloud = jiraUrl.includes('atlassian.net');
+  $('pane-results').innerHTML = `
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+
+      <div style="background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.25);border-radius:10px;padding:16px 18px">
+        <div style="font-size:14px;font-weight:600;color:var(--error);margin-bottom:8px">🔑 認證失敗（HTTP 401）</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.8">
+          帳號或密碼（Token）不正確，或格式有誤。請對照下方說明確認。
+        </div>
+      </div>
+
+      ${isCloud ? `
+      <div class="proxy-box blue">
+        <h4>☁️ Jira Cloud（atlassian.net）— 必須用 API Token</h4>
+        <div style="color:var(--text-2);line-height:1.8;margin-bottom:10px">
+          Jira Cloud <strong style="color:var(--error)">不接受帳號密碼</strong>，必須使用 API Token：
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px;align-items:start">
+          <span style="color:var(--text-3);font-weight:600;white-space:nowrap">帳號欄位</span>
+          <span style="color:var(--text)">填你的 <strong>Email 地址</strong>（如 your@company.com）</span>
+          <span style="color:var(--text-3);font-weight:600;white-space:nowrap">密碼欄位</span>
+          <span style="color:var(--text)">填 <strong>API Token</strong>（不是 Jira 登入密碼）</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" class="btn btn-sm btn-primary">
+            🔑 建立 API Token ↗
+          </a>
+          <button class="btn btn-sm" onclick="openCfg()">修改連線設定</button>
+        </div>
+      </div>` : `
+      <div class="proxy-box blue">
+        <h4>🏢 Jira Server / Data Center</h4>
+        <div style="color:var(--text-2);line-height:1.8;margin-bottom:10px">
+          Jira Server 使用帳號 + 密碼（或 Personal Access Token）：
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px;align-items:start">
+          <span style="color:var(--text-3);font-weight:600;white-space:nowrap">帳號欄位</span>
+          <span style="color:var(--text)">填 <strong>使用者名稱</strong>（username，不一定是 Email）</span>
+          <span style="color:var(--text-3);font-weight:600;white-space:nowrap">密碼欄位</span>
+          <span style="color:var(--text)">填 <strong>登入密碼</strong>，或 Personal Access Token（PAT）</span>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-sm" onclick="openCfg()">修改連線設定</button>
+          &nbsp;
+          <span style="font-size:11.5px;color:var(--text-3)">PAT 路徑：Jira → 頭像 → Profile → Personal Access Tokens</span>
+        </div>
+      </div>`}
+
+      <div class="proxy-box purple">
+        <h4>🔍 快速確認清單</h4>
+        <div style="color:var(--text-2);line-height:2;font-size:12.5px">
+          <label style="display:flex;align-items:center;gap:8px;color:var(--text-2);cursor:pointer;margin-bottom:2px">
+            <input type="checkbox" style="width:auto"> Jira URL 是否正確（如 https://xxx.atlassian.net 或內網 IP）
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;color:var(--text-2);cursor:pointer;margin-bottom:2px">
+            <input type="checkbox" style="width:auto"> ${isCloud ? 'Email 地址是否和 Atlassian 帳號一致' : '使用者名稱是否正確（嘗試用小寫）'}
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;color:var(--text-2);cursor:pointer;margin-bottom:2px">
+            <input type="checkbox" style="width:auto"> ${isCloud ? 'API Token 是否已建立且完整複製（沒有多餘空格）' : '密碼是否正確，或 PAT 是否過期'}
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;color:var(--text-2);cursor:pointer">
+            <input type="checkbox" style="width:auto"> 在瀏覽器直接開 <a href="${jiraUrl}/rest/api/2/myself" target="_blank" style="color:var(--accent)">${jiraUrl}/rest/api/2/myself ↗</a> 確認 API 是否可存取
+          </label>
+        </div>
+      </div>
+
+    </div>`;
+}
+
+function renderError(msg) {
+  $('pane-results').innerHTML = `
+    <div class="state-box err-box">
+      <div class="state-icon">❌</div>
+      <h3>請求失敗</h3>
+      <p>${escHtml(msg)}</p>
+      <div class="state-actions"><button class="btn" onclick="doSearch(0)">重試</button></div>
+    </div>`;
+}
+
+// ── AI Ready state ──
+function updateAiReady() {
+  const n = currentIssues.length;
+  $('aiAnalyzeBtn').disabled = n === 0;
+  $('aiRunBtn').disabled     = n === 0;
+  $('aiStatus').textContent  = n > 0 ? `已載入 ${n} 筆，共 ${currentTotal} 筆` : '搜尋後分析規則變更與影響';
+  $('aiCountBadge').textContent = n > 0 ? `已載入 ${n} 筆` : '尚未搜尋';
+  $('exportWrap').style.display = n > 0 ? 'block' : 'none';
+}
+
+// ── AI Analysis ──
+async function startAiAnalysis() {
+  if (!currentIssues.length) { showToast('⚠ 請先搜尋 Issue'); return; }
+  if (!aiUrl) { showToast('⚠ 請填入 AI API URL'); return; }
+  if (aiRunning) return;
+
+  switchTab('ai');
+
+  const customPrompt = $('aiPromptCustom').value.trim();
+  const myChange     = $('myChange').value.trim();
+  const proj  = $('projectKey').value.trim().toUpperCase();
+  const kw    = $('keyword').value.trim();
+  const n     = currentIssues.length;
+  const total = currentTotal;
+
+  // Resolve which prompt to use
+  // Priority: custom textarea content > active preset > impact (default)
+  let resolvedPrompt = '';
+  if (customPrompt) {
+    resolvedPrompt = customPrompt;                        // user typed something custom
+  } else if (activePreset !== 'impact' && activePreset !== 'custom' && PRESETS[activePreset]) {
+    resolvedPrompt = PRESETS[activePreset];              // preset selected
+  }
+  // else: fall through to the dynamic impact/rules prompt below
+
+  // Build concise issue digest
+  const issueDigest = currentIssues.map(issue => {
+    const f = issue.fields;
+    return {
+      key:        issue.key,
+      summary:    f.summary || '',
+      status:     f.status?.name || '',
+      type:       f.issuetype?.name || '',
+      priority:   f.priority?.name || '',
+      assignee:   f.assignee?.displayName || '未指派',
+      updated:    (f.updated||'').substring(0,10),
+      labels:     (f.labels||[]),
+      components: (f.components||[]).map(c=>c.name),
+      description:(f.description ? extractBodyText(f.description).substring(0,300) : ''),
+      comments:   (f.comment?.comments||[]).slice(0,5).map(c => ({
+        author: c.author?.displayName || c.author?.name || '?',
+        date:   (c.updated||c.created||'').substring(0,10),
+        body:   extractBodyText(c.body).substring(0,200)
+      }))
+    };
+  });
+
+  const SYS = `你是一位熟悉軟體開發的需求分析師，擅長從 Jira Issue 中萃取「規則變更」，並評估開發調整對既有規則的潛在影響。請用繁體中文回答，條列清晰、重點突出。`;
+
+  const issueBlock = `\`\`\`json\n${JSON.stringify(issueDigest, null, 2)}\n\`\`\``;
+
+  const defaultUserPrompt = myChange ? `
+我正在進行以下調整：
+
+> ${myChange.replace(/\n/g, '\n> ')}
+
+請根據下方 Jira 需求單，分析**這次調整可能產生的影響與風險**。
+
+Issue 清單（專案「${proj}」${kw ? `，關鍵字「${kw}」` : ''}，${n} 筆，共 ${total} 筆）：
+${issueBlock}
+
+請依序分析：
+
+## 1. 直接相關的需求單
+列出與我的調整**直接相關**的 Issue（規則或模組有重疊），說明相關的原因。
+
+## 2. ⚠️ 可能衝突或被覆蓋的規則
+從需求單的留言和描述中，找出**我的調整可能影響到**的既有規則：
+- 我改的邏輯是否和某張單的規則方向相反？
+- 是否有規則是建立在「我即將改變的條件」之上？
+- 留言中是否有人討論過類似的改法並產生問題？
+
+## 3. 間接影響範圍
+我的調整可能**連帶影響**的其他模組或流程（即使 Issue 沒有直接提到）。
+
+## 4. 建議的確認清單
+在正式提交前，建議我：
+- 主動去確認的人或單子
+- 需要額外測試的情境
+- 需要同步更新的相關文件或設定
+
+## 5. 總結評估
+用一段話說明這次調整的風險等級（低 / 中 / 高）和原因。
+`.trim() : `
+我正在開發，需要了解這批需求單中「過去改了哪些規則」，以及我未來的調整可能影響哪些地方。
+
+Issue 清單（專案「${proj}」${kw ? `，關鍵字「${kw}」` : ''}，${n} 筆，共 ${total} 筆）：
+${issueBlock}
+
+請依序分析：
+
+## 1. 規則變更清單
+逐條列出每張需求單**改了什麼規則或邏輯**：
+- **[Issue Key]** 標題：改動內容（原本 → 改後）
+
+## 2. 規則分類與關聯
+依功能領域分群（計算邏輯、驗證規則、流程控制、UI 顯示等），標示哪些規則彼此有關聯或相依。
+
+## 3. ⚠️ 高風險衝突點
+- 多張單修改了同一規則的不同面向
+- 規則之間有前後依賴
+- 留言中有爭議或回滾記錄
+
+## 4. 開發注意事項
+最需要小心不要動到的規則、開發前需確認的前置條件、改完後必須回歸測試的範圍。
+
+## 5. 整體摘要
+2–3 句話總結這批需求單的規則變動方向。
+`.trim();
+
+  // Build the context header (always included regardless of preset)
+  const contextHeader = `以下是 Jira 專案「${proj}」${kw ? `，關鍵字「${kw}」` : ''} 的 Issue 清單（${n} 筆，共 ${total} 筆），包含 Description 與留言：
+
+${issueBlock}
+
+---
+
+`;
+
+  // Resolve final message
+  // Priority: custom textarea > active preset > dynamic impact/rules prompt
+  const kbCtx  = typeof buildKbContext === 'function' ? buildKbContext() : '';
+  let userMsg = '';
+  if (customPrompt) {
+    userMsg = contextHeader + customPrompt + kbCtx;
+  } else if (resolvedPrompt) {
+    userMsg = contextHeader + resolvedPrompt + kbCtx;
+  } else {
+    userMsg = defaultUserPrompt + kbCtx; // already has context built-in
+  }
+
+  // Build endpoint — append /chat/completions if not already there
+  const endpoint = aiUrl.includes('/chat/completions')
+    ? aiUrl
+    : aiUrl.replace(/\/+$/, '') + '/chat/completions';
+
+  // UI: loading
+  aiRunning = true;
+  rawAiText = '';
+  const out = $('aiOutput');
+  out.innerHTML = '';
+  out.classList.add('loading');
+  $('aiSpinner').style.display = 'block';
+  $('aiIcon').style.display    = 'none';
+  $('aiRunBtn').disabled       = true;
+  $('aiAnalyzeBtn').disabled   = true;
+  $('stopAiBtn').style.display = 'inline-flex';
+  $('copyAiBtn').style.display = 'none';
+  $('dot-ai').style.opacity    = '0';
+
+  aiController = new AbortController();
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (aiKey) headers['Authorization'] = 'Bearer ' + aiKey;
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      signal: aiController.signal,
+      headers,
+      body: JSON.stringify({
+        model:       aiModel || undefined,
+        messages:    [
+          { role: 'system', content: SYS },
+          { role: 'user',   content: userMsg }
+        ],
+        temperature: 0.5,
+        max_tokens:  8192,
+        stream:      true
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(()=>'');
+      let errMsg = errText;
+      try { errMsg = JSON.parse(errText)?.error?.message || errText; } catch{}
+      throw new Error(`API 錯誤 ${res.status}：${errMsg.slice(0,300)}`);
+    }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let   buf     = '';
+    let   renderScheduled = false;
+
+    const scheduleRender = () => {
+      if (renderScheduled) return;
+      renderScheduled = true;
+      requestAnimationFrame(() => {
+        out.innerHTML = mdToHtml(rawAiText);
+        out.scrollTop = out.scrollHeight;
+        renderScheduled = false;
+      });
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+        if (payload === '[DONE]' || payload === '') continue;
+        try {
+          const ev = JSON.parse(payload);
+          const t1 = ev.choices?.[0]?.delta?.content;
+          if (t1) { rawAiText += t1; scheduleRender(); continue; }
+          const t2 = ev.choices?.[0]?.text;
+          if (t2) { rawAiText += t2; scheduleRender(); continue; }
+          const t3 = ev.delta?.text || ev.content?.[0]?.text;
+          if (t3) { rawAiText += t3; scheduleRender(); }
+        } catch(e) { /* ignore */ }
+      }
+    }
+    // Final render after stream ends
+    out.innerHTML = mdToHtml(rawAiText);
+    out.scrollTop = out.scrollHeight;
+
+    if (!rawAiText.trim()) throw new Error('API 回應無文字內容（串流結束但無 content）');
+
+  } catch(e) {
+    if (e.name === 'AbortError') {
+      if (rawAiText) out.innerHTML = mdToHtml(rawAiText) + '<br><span style="color:var(--text-3);font-size:12px">[已停止]</span>';
+      else out.innerHTML = '<span style="color:var(--text-3)">[已停止]</span>';
+    } else {
+      out.innerHTML = `<span style="color:var(--error)">⚠ 分析失敗：${escHtml(e.message)}</span>`;
+    }
+  } finally {
+    aiRunning = false;
+    out.classList.remove('loading');
+    $('aiSpinner').style.display = 'none';
+    $('aiIcon').style.display    = 'inline';
+    $('aiRunBtn').disabled       = currentIssues.length === 0;
+    $('aiAnalyzeBtn').disabled   = currentIssues.length === 0;
+    $('stopAiBtn').style.display = 'none';
+    if (rawAiText) {
+      $('copyAiBtn').style.display = 'inline-flex';
+      $('dot-ai').style.opacity    = '1';
+    }
+  }
+}
+
+function stopAi() {
+  if (aiController) { aiController.abort(); aiController = null; }
+}
+
+// ── Markdown → HTML (simple) ──
+function mdToHtml(md) {
+  const esc    = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inline = s => s
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,         '<em>$1</em>')
+    .replace(/`([^`]+)`/g,         '<code>$1</code>');
+
+  const lines = md.split('\n');
+  let html = '', inList = false, listType = '', inCode = false, codeLang = '', codeLines = [];
+
+  const closeList = () => {
+    if (inList) { html += listType === 'ol' ? '</ol>' : '</ul>'; inList = false; listType = ''; }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw  = lines[i];
+    const line = raw.trimEnd();
+
+    // ── Code block ──
+    if (line.startsWith('```')) {
+      if (inCode) {
+        html += `<pre><code${codeLang ? ` class="language-${esc(codeLang)}"` : ''}>${codeLines.map(esc).join('\n')}</code></pre>`;
+        inCode = false; codeLang = ''; codeLines = [];
+      } else {
+        closeList();
+        inCode = true; codeLang = line.slice(3).trim();
+      }
+      continue;
+    }
+    if (inCode) { codeLines.push(raw); continue; }
+
+    // ── Headings ──
+    const h3 = line.match(/^### (.+)/);
+    const h2 = line.match(/^## (.+)/);
+    const h1 = line.match(/^# (.+)/);
+    if (h3) { closeList(); html += `<h3>${inline(esc(h3[1]))}</h3>`; continue; }
+    if (h2) { closeList(); html += `<h2>${inline(esc(h2[1]))}</h2>`; continue; }
+    if (h1) { closeList(); html += `<h1>${inline(esc(h1[1]))}</h1>`; continue; }
+
+    // ── Horizontal rule ──
+    if (/^[-*_]{3,}$/.test(line.trim())) { closeList(); html += '<hr style="border-color:var(--border);margin:10px 0">'; continue; }
+
+    // ── Blockquote ──
+    if (line.startsWith('> ')) { closeList(); html += `<blockquote>${inline(esc(line.slice(2)))}</blockquote>`; continue; }
+
+    // ── Unordered list ──
+    const ul = line.match(/^(\s*)[-*+] (.+)/);
+    if (ul) {
+      if (!inList || listType !== 'ul') { closeList(); html += '<ul>'; inList = true; listType = 'ul'; }
+      html += `<li>${inline(esc(ul[2]))}</li>`;
+      continue;
+    }
+
+    // ── Ordered list ──
+    const ol = line.match(/^(\s*)\d+\. (.+)/);
+    if (ol) {
+      if (!inList || listType !== 'ol') { closeList(); html += '<ol>'; inList = true; listType = 'ol'; }
+      html += `<li>${inline(esc(ol[2]))}</li>`;
+      continue;
+    }
+
+    // ── Close list on non-list line ──
+    closeList();
+
+    // ── Empty line ──
+    if (!line.trim()) { html += '<div style="height:6px"></div>'; continue; }
+
+    // ── Paragraph ──
+    html += `<p style="margin:3px 0">${inline(esc(line))}</p>`;
+  }
+
+  // Close any open blocks
+  closeList();
+  if (inCode && codeLines.length) {
+    html += `<pre><code>${codeLines.map(esc).join('\n')}</code></pre>`;
+  }
+
+  return html;
+}
+
+// ── Preset prompts ──
+const PRESETS = {
+  impact: null, // uses the dynamic myChange-based prompt
+  rules: `請分析這批 Jira 需求單中所有的規則變更，以開發者視角整理：
+
+## 1. 規則變更清單
+逐條列出每張單改了什麼，格式：
+- **[KEY]** 標題：原本是什麼 → 改成什麼（若 description 不足請從 summary 推測）
+
+## 2. 分類整理
+依功能域分群（計算邏輯 / 驗證規則 / 流程控制 / 權限 / UI 顯示 / 其他），列出每群的 Issue Key。
+
+## 3. 規則相依關係
+哪些規則之間有前後依賴？哪些修改過同一個地方？
+
+## 4. 尚未關閉的規則（Open Issues）
+特別標出狀態還是 Open / In Progress 的，說明規則可能還沒上線的風險。
+
+## 5. 一句話摘要
+整批需求單的規則變動方向。`,
+
+  bizlogic: `請以「商業邏輯分析師」的角度，從這批 Jira 需求單中還原完整的商業邏輯：
+
+## 1. 核心業務規則
+從 Summary、Description 和留言中，萃取出明確的業務規則（條件、觸發時機、執行結果），格式：
+- **規則名稱**：當 [條件] 時，系統應 [行為]（來源：KEY-123）
+
+## 2. 例外情況與特殊處理
+哪些需求單定義了例外情境、邊界條件或 edge case？整理出完整的例外清單。
+
+## 3. 業務流程圖（文字版）
+用文字描述主要流程的步驟，標出哪些節點有被需求單修改過。
+
+## 4. 規則之間的衝突或矛盾
+不同需求單之間，是否有業務規則方向相反或互相矛盾的地方？
+
+## 5. 留言中的業務決策
+從討論留言中找出關鍵的業務決策點（為什麼這樣設計、拒絕了什麼方案）。
+
+## 6. 待釐清的業務邏輯
+哪些地方描述模糊、需要進一步確認？`,
+
+  testcases: `請根據這批 Jira 需求單（包含 Description 和留言），整理出完整的測試情境清單。若有「我目前在調整什麼」的內容，也一併納入考量。
+
+## 1. 正常流程測試（Happy Path）
+列出每個功能的基本正常情境，格式：
+- [ ] **[情境名稱]**：操作步驟 → 預期結果（來源：KEY-123）
+
+## 2. 邊界條件與例外測試
+從需求描述和留言中找出所有提到的邊界值、特殊條件、例外處理，格式：
+- [ ] **[條件描述]**：當 [特殊情況] 時 → 預期行為
+
+## 3. 回歸測試範圍
+這批需求改動後，哪些**原有功能**可能受影響，需要確認沒有壞掉：
+- [ ] **[原有功能]**：確認 [具體行為] 仍然正常
+
+## 4. 跨功能整合測試
+哪些情境需要跨模組或跨流程驗證（例如：A 功能改了，B 功能的結果是否還正確）：
+- [ ] **[整合情境]**：[模組 A] + [模組 B] → 預期結果
+
+## 5. 留言中提到的特殊情境
+從討論留言中找出測試時需要特別注意的情境（QA 提問、過去踩過的坑、回滾原因等）：
+- [ ] **[情境]**：說明（來源：KEY-123 的留言）
+
+## 6. 測試優先度建議
+依風險高低排序，列出最需要優先執行的前 5 個測試情境，並說明原因。`,
+
+  risk: `請從風險與依賴的角度分析這批 Jira 需求單：
+
+## 1. 高風險 Issue ⚠️
+找出以下類型並標記：
+- 改動範圍廣、影響多個模組
+- 留言有爭議或多次修改
+- 描述不清楚、可能有理解歧義
+- 已關閉但可能被重新影響的規則
+
+## 2. 跨模組依賴地圖
+哪些 Issue 之間有依賴關係？（A 完成才能做 B / A 的規則是 B 的前提）
+
+## 3. 技術風險點
+從留言和描述中，找出有提到效能、資料移轉、相容性或回退方案的討論。
+
+## 4. 測試風險
+哪些改動最容易引發回歸問題？建議優先測試的情境。
+
+## 5. 未解決的阻塞項目
+狀態還是 Open 或 In Progress 且可能影響其他工作的 Issue。`,
+
+  custom: ''
+};
+
+let activePreset = 'impact';
+
+function applyPreset(btn) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activePreset = btn.dataset.preset;
+  const ta = $('aiPromptCustom');
+  if (activePreset === 'custom') {
+    ta.placeholder = '在這裡輸入你想要 AI 做的分析…';
+    ta.focus();
+  } else if (activePreset === 'impact') {
+    ta.value = '';
+    ta.placeholder = '（留空，AI 會根據上方「我目前在調整什麼」做影響評估）';
+  } else {
+    ta.value = PRESETS[activePreset] || '';
+    ta.placeholder = '';
+  }
+}
+
+// ── Export ──
+function toggleExportMenu() {
+  const m = $('exportMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.export-wrap')) { const m=$('exportMenu'); if(m) m.style.display='none'; }
+});
+
+function doExport(fmt) {
+  $('exportMenu').style.display = 'none';
+  if (!currentIssues.length) { showToast('⚠ 尚無資料可匯出'); return; }
+  fmt === 'md' ? exportMarkdown() : exportHTML();
+}
+
+function buildDocData() {
+  const proj    = $('projectKey').value.trim().toUpperCase() || '—';
+  const kw      = $('keyword').value.trim() || '—';
+  const jiraUrl = $('jiraUrl').value.trim().replace(/\/$/,'');
+  const now     = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
+  return { proj, kw, jiraUrl, now };
+}
+
+function issueToMd(issue, jiraUrl) {
+  const f    = issue.fields;
+  const key  = issue.key;
+  const link = jiraUrl ? jiraUrl+'/browse/'+key : key;
+  const summ = f.summary || '(無標題)';
+  const stat = f.status?.name || '';
+  const type = f.issuetype?.name || '';
+  const asgn = f.assignee?.displayName || '未指派';
+  const upd  = (f.updated||'').substring(0,10);
+  const prio = f.priority?.name || '';
+  const desc = f.description ? extractBodyText(f.description) : '';
+  const comments = f.comment?.comments || [];
+
+  let md = '### ['+key+']('+link+') · '+type+' · '+stat+'\n';
+  md += '**指派**：'+asgn+'　**優先度**：'+(prio||'—')+'　**更新**：'+upd+'\n\n';
+  if (desc) md += '**描述：**\n'+desc.substring(0,1000)+(desc.length>1000?'\n…（截斷）':'')+'\n\n';
+  if (comments.length) {
+    md += '**留言（'+f.comment.total+' 則）：**\n';
+    comments.slice(0,5).forEach(c => {
+      const auth = c.author?.displayName || c.author?.name || '?';
+      const date = (c.updated||c.created||'').substring(0,10);
+      const body = extractBodyText(c.body).substring(0,300);
+      md += '- 👤 **'+auth+'** ('+date+')：'+body+'\n';
+    });
+    if (f.comment.total > 5) md += '- …還有 '+(f.comment.total-5)+' 則留言\n';
+  }
+  return md + '\n---\n\n';
+}
+
+function exportMarkdown() {
+  const { proj, kw, jiraUrl, now } = buildDocData();
+  let md = '# Jira 需求分析文件\n\n';
+  md += '| 項目 | 內容 |\n|---|---|\n';
+  md += '| 專案 | '+proj+' |\n';
+  md += '| 關鍵字 | '+kw+' |\n';
+  md += '| 匯出時間 | '+now+' |\n';
+  md += '| Issue 數 | '+currentIssues.length+' 筆（共 '+currentTotal+' 筆） |\n\n';
+  md += '---\n\n## Issue 清單\n\n';
+  currentIssues.forEach(issue => { md += issueToMd(issue, jiraUrl); });
+  if (rawAiText) { md += '## AI 分析結果\n\n' + rawAiText + '\n'; }
+  download(md, 'jira-'+proj.replace(/[\s,]+/g,'-')+'-'+Date.now()+'.md', 'text/markdown');
+  showToast('✓ Markdown 文件已下載');
+}
+
+function exportHTML() {
+  const { proj, kw, jiraUrl, now } = buildDocData();
+
+  const issuesHtml = currentIssues.map(issue => {
+    const f    = issue.fields;
+    const key  = issue.key;
+    const link = jiraUrl ? jiraUrl+'/browse/'+key : '#';
+    const summ = f.summary || '(無標題)';
+    const stat = f.status?.name || '';
+    const type = f.issuetype?.name || '';
+    const asgn = f.assignee?.displayName || '未指派';
+    const upd  = (f.updated||'').substring(0,10);
+    const prio = f.priority?.name || '';
+    const desc = f.description ? extractBodyText(f.description) : '';
+    const comments = f.comment?.comments || [];
+
+    const cmtHtml = comments.length ? '<div class=\"comments\"><div class=\"cmt-label\">💬 留言（'+f.comment.total+' 則）</div>'+
+      comments.slice(0,5).map(c => {
+        const auth = escHtml(c.author?.displayName || c.author?.name || '?');
+        const date = (c.updated||c.created||'').substring(0,10);
+        const body = escHtml(extractBodyText(c.body).substring(0,400));
+        return '<div class=\"cmt\"><span class=\"cmt-meta\">👤 '+auth+' · '+date+'</span><div class=\"cmt-body\">'+body+'</div></div>';
+      }).join('')+(f.comment.total>5?'<div class=\"cmt-more\">…還有 '+(f.comment.total-5)+' 則留言</div>':'')+'</div>' : '';
+
+    return '<div class=\"issue\"><div class=\"issue-header\"><a href=\"'+link+'\" class=\"issue-key\" target=\"_blank\">'+escHtml(key)+'</a><span class=\"issue-type\">'+escHtml(type)+'</span><span class=\"issue-stat\">'+escHtml(stat)+'</span>'+(prio?'<span class=\"issue-prio\">'+escHtml(prio)+'</span>':'')+'</div><div class=\"issue-summ\">'+escHtml(summ)+'</div><div class=\"issue-meta2\">👤 '+escHtml(asgn)+' &nbsp;·&nbsp; 🕐 '+upd+'</div>'+(desc?'<div class=\"desc\">'+escHtml(desc.substring(0,800))+(desc.length>800?'…':'')+'</div>':'')+cmtHtml+'</div>';
+  }).join('');
+
+  const aiSection = rawAiText ? '<section><h2>🤖 AI 分析結果</h2><div class=\"ai-content\">'+mdToHtml(rawAiText)+'</div></section>' : '';
+
+  const css = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.7;color:#1a1a2e;background:#f8f9fc}.page{max-width:860px;margin:0 auto;padding:32px 24px 60px}h1{font-size:22px;font-weight:700;margin-bottom:4px}h2{font-size:17px;font-weight:600;margin:32px 0 16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}.meta-table{border-collapse:collapse;margin:16px 0 28px;font-size:13px}.meta-table td{padding:5px 16px 5px 0;color:#64748b}.meta-table td:first-child{font-weight:600;color:#1a1a2e;white-space:nowrap}.issue{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 18px;margin-bottom:12px;break-inside:avoid}.issue-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.issue-key{font-family:monospace;font-size:13px;font-weight:700;color:#3b5bdb;text-decoration:none}.issue-key:hover{text-decoration:underline}.issue-type,.issue-stat,.issue-prio{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#475569}.issue-summ{font-size:15px;font-weight:500;margin-bottom:5px}.issue-meta2{font-size:12px;color:#94a3b8;margin-bottom:8px}.desc{font-size:13px;color:#475569;background:#f8f9fc;border-radius:6px;padding:10px 12px;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow:hidden;margin-top:8px}.comments{margin-top:10px;border-top:1px solid #f1f5f9;padding-top:10px}.cmt-label{font-size:11px;font-weight:600;color:#94a3b8;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}.cmt{background:#f8f9fc;border-radius:6px;padding:8px 12px;margin-bottom:6px}.cmt-meta{font-size:11.5px;font-weight:600;color:#64748b;display:block;margin-bottom:4px}.cmt-body{font-size:13px;color:#475569;white-space:pre-wrap;word-break:break-word}.cmt-more{font-size:11.5px;color:#94a3b8;text-align:center;padding:4px}.ai-content{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px 24px;font-size:14px;line-height:1.8}.ai-content h1{font-size:18px;color:#3b5bdb;margin:16px 0 8px}.ai-content h2{font-size:15px;color:#5850ec;border-bottom:1px solid #e2e8f0;margin:14px 0 8px;padding-bottom:5px}.ai-content h3{font-size:14px}.ai-content ul,.ai-content ol{margin:6px 0 6px 20px}.ai-content li{margin-bottom:3px}.ai-content strong{color:#1a1a2e}.ai-content code{background:#f1f5f9;color:#5850ec;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:12px}.ai-content blockquote{border-left:3px solid #e2e8f0;margin:8px 0;padding:2px 12px;color:#64748b}.ai-content pre{background:#f8f9fc;border:1px solid #e2e8f0;border-radius:6px;padding:12px;overflow-x:auto;margin:8px 0}.footer{margin-top:40px;font-size:12px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:16px}@media print{body{background:#fff}.page{padding:0}}`;
+
+  const html = '<!DOCTYPE html><html lang=\"zh-TW\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Jira 需求分析 · '+escHtml(proj)+'</title><style>'+css+'</style></head><body><div class=\"page\"><h1>📋 Jira 需求分析文件</h1><table class=\"meta-table\"><tr><td>專案</td><td>'+escHtml(proj)+'</td></tr><tr><td>關鍵字</td><td>'+escHtml(kw)+'</td></tr><tr><td>Issue 數</td><td>'+currentIssues.length+' 筆（共 '+currentTotal+' 筆）</td></tr><tr><td>匯出時間</td><td>'+now+'</td></tr></table><section><h2>📑 Issue 清單</h2>'+issuesHtml+'</section>'+aiSection+'<div class=\"footer\">由 Jira Issue Finder 匯出 · '+now+'</div></div></body></html>';
+
+  download(html, 'jira-'+proj.replace(/[\s,]+/g,'-')+'-'+Date.now()+'.html', 'text/html');
+  showToast('✓ HTML 文件已下載');
+}
+
+function download(content, filename, mime) {
+  const blob = new Blob([content], { type: mime+';charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href:url, download:filename });
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function extractBodyText(body) {
+  if (!body) return '';
+  if (typeof body === 'string') return body.trim();
+  // Atlassian Document Format (ADF) — walk content tree
+  if (typeof body === 'object' && Array.isArray(body.content)) {
+    return body.content.map(node => adfNode(node)).join('').trim();
+  }
+  return '';
+}
+function adfNode(n) {
+  if (!n) return '';
+  if (n.type === 'text') return n.text || '';
+  if (Array.isArray(n.content)) return n.content.map(adfNode).join('');
+  return '';
+}
+
+function renderComments(commentField) {
+  if (!commentField) return '';
+  const list  = commentField.comments || [];
+  const total = commentField.total    || 0;
+  if (!list.length) return '';
+
+  const SHOW = 5; // show up to 5 comments
+  let html = `<div class="comments-wrap">
+    <div class="comments-label">💬 留言（${total} 則）</div>`;
+
+  list.slice(0, SHOW).forEach(c => {
+    const author = c.author?.displayName || c.author?.name || '?';
+    const date   = (c.updated || c.created || '').substring(0, 10);
+    const body   = extractBodyText(c.body).substring(0, 500);
+    const more   = extractBodyText(c.body).length > 500 ? '…' : '';
+    html += `
+    <div class="comment-item">
+      <div class="comment-meta">
+        <span class="comment-author">👤 ${escHtml(author)}</span>
+        <span class="comment-date">${escHtml(date)}</span>
+      </div>
+      <div class="comment-body">${escHtml(body)}${more}</div>
+    </div>`;
+  });
+
+  if (total > SHOW) {
+    html += `<div class="comments-more">…還有 ${total - SHOW} 則留言，請至 Jira 查看完整內容</div>`;
+  }
+
+  return html + '</div>';
+}
+function parseManualData() {
+  const raw = $('manualData').value.trim();
+  if (!raw) { showToast('⚠ 請先貼入資料'); return; }
+
+  const stat = $('parseStatus');
+  stat.textContent = '解析中…';
+  stat.style.color = 'var(--text-3)';
+
+  let issues = [];
+
+  // Detect CSV: has comma and multiple lines with a header-like first row
+  const lines = raw.split('\n').filter(l => l.trim());
+  const looksLikeCSV = lines.length > 1 && lines[0].includes(',') &&
+    /issue|summary|key|status/i.test(lines[0]);
+
+  if (looksLikeCSV) {
+    issues = parseCSV(raw);
+  }
+
+  // KEY-123 pattern: "ABC-12: summary text"
+  if (!issues.length) {
+    issues = parseFreeText(raw);
+  }
+
+  // Last resort: treat entire text as one blob for AI
+  if (!issues.length) {
+    issues = [{
+      key: 'INPUT',
+      fields: {
+        summary: raw.substring(0, 100) + (raw.length > 100 ? '…' : ''),
+        status: { name: '' }, issuetype: { name: '' },
+        assignee: null, priority: { name: '' },
+        updated: '', description: raw, labels: [], components: []
+      }
+    }];
+  }
+
+  currentIssues = issues;
+  currentTotal  = issues.length;
+  renderResults({ issues, total: issues.length, startAt: 0 }, '', 0, issues.length);
+  updateAiReady();
+  switchTab('results');
+
+  stat.textContent = `✓ 已載入 ${issues.length} 筆`;
+  stat.style.color = 'var(--success)';
+  showToast(`✓ 載入 ${issues.length} 筆，可進行 AI 分析`);
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const header = parseCSVRow(lines[0]).map(h => h.trim().toLowerCase().replace(/^"|"$/g,''));
+  const keyIdx   = findCol(header, ['issue key','key','id']);
+  const summIdx  = findCol(header, ['summary','title','subject','name']);
+  const statIdx  = findCol(header, ['status']);
+  const typeIdx  = findCol(header, ['issue type','issuetype','type']);
+  const asgnIdx  = findCol(header, ['assignee','assigned to','owner']);
+  const priIdx   = findCol(header, ['priority']);
+  const updIdx   = findCol(header, ['updated','update date','last updated']);
+  const descIdx  = findCol(header, ['description','desc']);
+  const lblIdx   = findCol(header, ['labels','label']);
+
+  const issues = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const cols = parseCSVRow(lines[i]);
+    const key  = keyIdx >= 0 ? (cols[keyIdx]||'').trim() : `ROW-${i}`;
+    if (!key) continue;
+    issues.push({
+      key,
+      fields: {
+        summary:     summIdx >= 0 ? (cols[summIdx]||'').trim() : '',
+        status:      { name: statIdx >= 0 ? (cols[statIdx]||'').trim() : '' },
+        issuetype:   { name: typeIdx >= 0 ? (cols[typeIdx]||'').trim() : '' },
+        assignee:    asgnIdx >= 0 && (cols[asgnIdx]||'').trim()
+                       ? { displayName: cols[asgnIdx].trim() } : null,
+        priority:    { name: priIdx >= 0 ? (cols[priIdx]||'').trim() : '' },
+        updated:     updIdx  >= 0 ? (cols[updIdx]||'').trim().substring(0,10) : '',
+        description: descIdx >= 0 ? (cols[descIdx]||'').trim().substring(0,400) : '',
+        labels:      lblIdx  >= 0 ? (cols[lblIdx]||'').split(';').map(s=>s.trim()).filter(Boolean) : [],
+        components:  []
+      }
+    });
+  }
+  return issues;
+}
+
+function findCol(headers, candidates) {
+  for (const c of candidates) {
+    let i = headers.indexOf(c);
+    if (i >= 0) return i;
+    i = headers.findIndex(h => h.includes(c));
+    if (i >= 0) return i;
+  }
+  return -1;
+}
+
+function parseCSVRow(line) {
+  const result = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) { result.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  result.push(cur);
+  return result.map(s => s.replace(/^"|"$/g,'').trim());
+}
+
+function parseFreeText(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  const issues = [];
+  // Match "KEY-123 some text" or "KEY-123: some text" or "KEY-123\tsome text"
+  const keyRe = /^([A-Za-z][A-Za-z0-9_]+-\d+)[:\s\t]+(.*)$/;
+  for (const line of lines) {
+    const m = line.trim().match(keyRe);
+    if (m) {
+      issues.push({ key: m[1].toUpperCase(), fields: {
+        summary: m[2].trim(), status: { name: '' }, issuetype: { name: '' },
+        assignee: null, priority: { name: '' }, updated: '',
+        description: '', labels: [], components: []
+      }});
+    }
+  }
+  return issues;
+}
+
+// ── Tabs ──
+function switchTab(t) {
+  ['results','ai','kb'].forEach(id => {
+    $(`tab-${id}`).classList.toggle('active', id===t);
+    $(`pane-${id}`).classList.toggle('active', id===t);
+  });
+  $('copyAiBtn').style.display = (t==='ai' && rawAiText) ? 'inline-flex' : 'none';
+}
+
+// ── Utilities ──
+function statusCls(s) {
+  const l = s.toLowerCase();
+  if (l.includes('progress')) return 'issue-status st-prog';
+  if (l==='done'||l==='closed'||l==='resolved') return 'issue-status st-done';
+  return 'issue-status st-open';
+}
+function typeCls(t) {
+  const l = t.toLowerCase();
+  return 'type-badge ' + ({'bug':'tb-bug','task':'tb-task','story':'tb-story','epic':'tb-epic'}[l]||'tb-default');
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(()=>showToast('✓ 已複製'));
+}
+function copyAiOutput() {
+  copyText(rawAiText || $('aiOutput').innerText);
+}
+
+// ── Toast ──
+let toastTimer;
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── Buttons ──
+$('searchBtn').addEventListener('click', ()=>doSearch(0));
+$('copyJqlBtn').addEventListener('click', ()=>{
+  const jql = buildJQL();
+  if (!jql) { showToast('⚠ JQL 尚未生成'); return; }
+  copyText(jql);
+});
+$('clearAllBtn').addEventListener('click', ()=>{
+  ['jiraUrl','jiraUser','jiraToken','projectKey','keyword'].forEach(id=>$(id).value='');
+  $('filterStatus').value='';$('filterType').value='';$('sortOrder').value='updated DESC';
+  currentIssues=[]; currentTotal=0;
+  renderJQL();
+  updateAiReady();
+  $('pane-results').innerHTML=`<div class="state-box"><div class="state-icon">🔍</div><h3>輸入搜尋條件開始查詢</h3><p>填入 Jira URL、專案 Key 及關鍵字，點擊右上角「搜尋」按鈕。</p></div>`;
+  $('dot-results').style.opacity='0';
+});
+
+// ── Persist Settings ──
+function saveSettings() {
+  try {
+    localStorage.setItem('jifa', JSON.stringify({
+      jiraUrl:    $('jiraUrl').value,
+      jiraUser:   $('jiraUser').value,
+      projectKey: $('projectKey').value
+    }));
+  } catch(e){}
+}
+(function loadSettings(){
+  try {
+    const s = JSON.parse(localStorage.getItem('jifa')||'{}');
+    if (s.jiraUrl)    $('jiraUrl').value    = s.jiraUrl;
+    if (s.jiraUser)   $('jiraUser').value   = s.jiraUser;
+    if (s.projectKey) $('projectKey').value = s.projectKey.toUpperCase();
+    renderJQL();
+    if (s.jiraUrl) {
+      $('cfgBody').classList.remove('vis');
+      $('cfgToggle').classList.remove('open');
+      updateCfgSummary();
+    }
+  } catch(e){}
+})();
+
+// ── Knowledge Base ──
+let kbEntries = [];
+let kbNextId  = 1;
+
+function extractDoneSection(text) {
+  // Find "完成" section header — handles variants like "✓完成", "已完成", "完成", "Done"
+  const donePattern = /(?:^|\n)\s*(?:✓\s*)?(?:已)?完成\s*(?:\n|$)/i;
+  const m = text.match(donePattern);
+  if (!m) return null; // not a To-Do format
+
+  let doneText = text.slice(text.indexOf(m[0]) + m[0].length).trim();
+
+  // Strip page footer noise (URL lines, page numbers, print headers)
+  doneText = doneText
+    .split('\n')
+    .filter(line => {
+      const t = line.trim();
+      if (!t) return false;
+      if (/^https?:\/\//.test(t)) return false;           // URL lines
+      if (/^\d+\/\d+$/.test(t)) return false;             // page numbers like "1/2"
+      if (/Microsoft To Do/i.test(t)) return false;       // header repeat
+      if (/Outlook$/i.test(t)) return false;              // "- Outlook" repeat
+      if (/使用 Microsoft To Do 列印/.test(t)) return false;
+      if (/^上午|^下午/.test(t)) return false;            // time stamps
+      return true;
+    })
+    .join('\n')
+    .trim();
+
+  return doneText || null;
+}
+
+async function handleKbUpload(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  if (!files.length) return;
+  const doneOnly = $('kbDoneOnly') && $('kbDoneOnly').checked;
+  for (const file of files) {
+    showToast('⏳ 讀取 ' + file.name + '…');
+    try {
+      let text = '';
+      if (file.name.toLowerCase().endsWith('.pdf')) {
+        text = await extractPdfText(file);
+      } else {
+        text = await file.text();
+      }
+      text = text.trim();
+      if (!text) { showToast('⚠ ' + file.name + ' 無法提取文字'); continue; }
+
+      if (doneOnly) {
+        const done = extractDoneSection(text);
+        if (done === null) {
+          // No "完成" section found — ask if user wants to import all
+          if (!confirm(file.name + ' 找不到「完成」區塊，要匯入全部內容嗎？')) continue;
+        } else {
+          text = done;
+        }
+      }
+
+      const label = doneOnly ? file.name + '（已完成）' : file.name;
+      kbEntries.push({ id: kbNextId++, name: label, content: text, charCount: text.length });
+      showToast('✓ ' + label + ' (' + text.length.toLocaleString() + ' 字)');
+    } catch(e) {
+      showToast('⚠ ' + file.name + ' 失敗：' + (e.message||e));
+    }
+  }
+  renderKbEntries();
+  renderKbCards();
+}
+
+async function extractPdfText(file) {
+  if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js 未載入');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const ab = await file.arrayBuffer();
+  const doc = await pdfjsLib.getDocument({ data: ab }).promise;
+  let out = '';
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const tc = await page.getTextContent();
+    out += tc.items.map(it => it.str).join(' ') + '\n';
+  }
+  return out;
+}
+
+function renderKbEntries() {
+  const list  = $('kbEntryList');
+  const badge = $('kbCountBadge');
+  if (!kbEntries.length) { list.innerHTML = ''; badge.textContent = ''; $('dot-kb').style.opacity='0'; return; }
+  badge.textContent = kbEntries.length + ' 筆';
+  list.innerHTML = kbEntries.map(e => `
+    <div class="kb-entry">
+      <span class="kb-entry-icon">${e.name.endsWith('.pdf') ? '📄' : '📝'}</span>
+      <span class="kb-entry-name" title="${escHtml(e.name)}">${escHtml(e.name)}</span>
+      <span class="kb-entry-chars">${e.charCount.toLocaleString()}字</span>
+      <button class="kb-entry-del" onclick="removeKbEntry(${e.id})">✕</button>
+    </div>`).join('');
+  $('dot-kb').style.opacity = '1';
+}
+
+function renderKbCards() {
+  const c = $('kbCardList');
+  if (!kbEntries.length) {
+    c.innerHTML = '<div class="kb-empty"><div class="kb-empty-icon">📂</div><div>尚無知識庫內容<br><span style="font-size:11px">點左側「上傳 PDF / TXT」匯入處理紀錄</span></div></div>';
+    return;
+  }
+  c.innerHTML = kbEntries.map(e => `
+    <div class="kb-card" id="kbc-${e.id}">
+      <div class="kb-card-head" onclick="document.getElementById('kbc-${e.id}').classList.toggle('open')">
+        <span>${e.name.endsWith('.pdf') ? '📄' : '📝'}</span>
+        <span class="kb-card-title">${escHtml(e.name)}</span>
+        <span class="kb-card-meta">${e.charCount.toLocaleString()} 字</span>
+        <span class="kb-toggle">▼</span>
+      </div>
+      <div class="kb-card-body">
+        <pre>${escHtml(e.content.substring(0,3000))}${e.content.length>3000?'\n…（顯示前 3000 字）':''}</pre>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <button class="btn btn-sm" onclick="copyText(kbEntries.find(x=>x.id===${e.id})?.content||'')">複製全文</button>
+          <button class="btn btn-sm" style="color:var(--error)" onclick="removeKbEntry(${e.id})">移除</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function removeKbEntry(id) {
+  kbEntries = kbEntries.filter(e => e.id !== id);
+  renderKbEntries();
+  renderKbCards();
+}
+
+function buildKbContext() {
+  if (!kbEntries.length) return '';
+  const cb = $('kbIncludeInAi');
+  if (cb && !cb.checked) return '';
+  const MAX = 4000;
+  const blocks = kbEntries.map(e =>
+    `【${e.name}】\n${e.content.substring(0, MAX)}${e.content.length > MAX ? '\n…（截斷）' : ''}`
+  ).join('\n\n---\n\n');
+  return `\n\n---\n\n以下是知識庫（過去的處理紀錄，請一同參考）：\n\n${blocks}\n\n---`;
+}
+
+loadAiSettings();
+</script>
+</body>
+</html>
+
+</body></html>
