@@ -1843,9 +1843,24 @@ function saveSettings() {
 let kbEntries = [];
 let kbNextId  = 1;
 
-function extractDoneSection(text) {
-  // Find "完成" section header — handles variants like "✓完成", "已完成", "完成", "Done"
-  const donePattern = /(?:^|\n)\s*(?:✓\s*)?(?:已)?完成\s*(?:\n|$)/i;
+// Remove spaces between adjacent CJK characters (PDF.js often splits them)
+function normalizeCJK(text) {
+  const cjk = /[⺀-⻿　-鿿豈-﫿︰-﹏＀-￯]/;
+  let prev = '';
+  while (prev !== text) {
+    prev = text;
+    text = text.replace(new RegExp('(' + cjk.source + ')\\s+(' + cjk.source + ')', 'g'), '$1$2');
+  }
+  return text;
+}
+
+function extractDoneSection(rawText) {
+  // Normalize CJK first: PDF.js joins text items with spaces, turning "完成" into "完 成"
+  const text = normalizeCJK(rawText);
+
+  // Find "完成" section header — handles variants like "✓完成", "已完成", "完成"
+  // Also tolerates stray spaces inside the keyword itself (belt-and-suspenders)
+  const donePattern = /(?:^|\n)\s*(?:[✓✔☑]\s*)?(?:已\s*)?完\s*成\s*(?:\n|$)/im;
   const m = text.match(donePattern);
   if (!m) return null; // not a To-Do format
 
@@ -1891,8 +1906,12 @@ async function handleKbUpload(event) {
       if (doneOnly) {
         const done = extractDoneSection(text);
         if (done === null) {
-          // No "完成" section found — ask if user wants to import all
-          if (!confirm(file.name + ' 找不到「完成」區塊，要匯入全部內容嗎？')) continue;
+          // No "完成" section found — show a snippet to help debug, then ask
+          const preview = text.substring(0, 300).replace(/\n/g, ' ↵ ');
+          const msg = file.name + ' 找不到「完成」區塊。\n\n' +
+            '提取到的文字開頭（供確認）：\n' + preview + '\n\n' +
+            '要匯入全部內容嗎？';
+          if (!confirm(msg)) continue;
         } else {
           text = done;
         }
@@ -1914,11 +1933,26 @@ async function extractPdfText(file) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const ab = await file.arrayBuffer();
   const doc = await pdfjsLib.getDocument({ data: ab }).promise;
+  const cjkRe = /[⺀-⻿　-鿿豈-﫿︰-﹏＀-￯]/;
   let out = '';
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
     const tc = await page.getTextContent();
-    out += tc.items.map(it => it.str).join(' ') + '\n';
+    let pageText = '';
+    for (const item of tc.items) {
+      if (item.hasEOL) {
+        // This item ends a line — append and break
+        pageText += item.str + '\n';
+      } else {
+        // Only insert a space between non-CJK characters; CJK runs should be adjacent
+        const last  = pageText[pageText.length - 1] || '';
+        const first = item.str[0] || '';
+        const needSpace = pageText && !cjkRe.test(last) && !cjkRe.test(first);
+        if (needSpace) pageText += ' ';
+        pageText += item.str;
+      }
+    }
+    out += pageText + '\n';
   }
   return out;
 }
